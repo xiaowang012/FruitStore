@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"> 
+	<title>水果商城-登录</title>
+    <link rel="icon" href="/static/imgs/apple.png" type="image/x-icon"> 
+	<link rel="stylesheet" href="/static/css/bootstrap.min.css">  
+	<script src="/static/js/jquery/jquery.min.js"></script>
+	<script src="/static/js/bootstrap.min.js"></script>
+</head>
+<style>
+p{color: red; line-height: 50px;}
+body{
+    background-image: url(../static/imgs/login_1.jpeg);
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+</style>
+<body>
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-4 column">
+            </div>
+            <div class="col-md-4 column">
+            </div>
+            <div class="col-md-4 column">
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-4 column">
+            </div>
+            <div class="col-md-4 column">
+                <div style="text-align: center;" class="page-header">
+                    <h1>
+                        登录界面 <small></small>
+                    </h1>
+                </div>
+                <form role="form" action="/login/" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                         <label for="username">用户名:</label><input style="background: rgba(255,255,255,0.5);" type="text" class="form-control" name="username" /><p>{%if form.username.errors %}{{ form.username.errors.0 }} {% endif %}</p>
+                    </div>
+                    <div class="form-group">
+                         <label for="password">密码:</label><input style="background: rgba(255,255,255,0.5);" type="password" class="form-control" name="password" /><p>{%if form.password.errors %}{{ form.password.errors.0 }} {% endif %}</p>
+                    </div>
+                    <div>
+                        <button  type="submit" class="btn btn-default btn-primary">登录</button><a style="line-height: 50px;font-size: larger;margin-left: 40px;" href="/register/">没有账号?去注册一个!</a>
+                    </div>
+                    <p> {%if dic1 %}{{ dic1.message }} {% endif %}</p>
+                </form>
+            </div>
+            <div class="col-md-4 column">
+            </div>
+        </div>
+    </div>
+</body> 
+</html>
+
+
