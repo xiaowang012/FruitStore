@@ -42,7 +42,10 @@ def login(request):
 
 #用户注册
 def register(request):
-    if request.method == "POST":
+    if request.method == 'GET':
+        form = forms.RegisterForm()
+        return render(request,'register.html',{'form':form})
+    elif request.method == "POST":
         form = forms.RegisterForm(request.POST)
         if form.is_valid():
             username = request.POST.get("username")
@@ -109,11 +112,70 @@ def store_index(request):
         # return render(request,'my_testcase.html',{'form':form,'list1':book_info,'dic1':dic1})
         return render(request,'index.html')
 
+#首页翻页
+def store_index_page(request):
+    pass
+
+
+#用户信息
 def user_info(request):
     if request.method == 'GET':
         return render(request,'user_info.html')
 
+#修改密码
+def update_password(request):
+    pass
+
+#修改个人信息
+def update_user_info(request):
+    pass
+
+#获取水果列表
+def fruit_info(request):
+    if request.method == 'GET':
+        return render(request,'fruit_list.html')
+
+#首页查询水果(模糊查询)
+def search_fruits(request):
+    pass
+
+#水果商品详情页面
+def fruit_details(request):
+    if request.method == 'GET':
+        return render(request,'fruit_details.html')
+
+#购物车页面
+def store_cart(request):
+    pass
+
+#付款(支付宝接口付款)
+def ali_pay(request):
+    pass
 
 #商城后台管理
 def store_management(request):
+    pass
+
+#权限管理
+def permission_management(request):
+    pass
+
+#订单管理
+def order_management(request):
+    pass
+
+#用户管理
+def user_management(request):
+    pass
+
+#商品管理
+def goods_management(request):
+    pass
+
+#账目管理
+def account_management(request):
+    pass
+
+#退货管理
+def returngoods_management(request):
     pass
