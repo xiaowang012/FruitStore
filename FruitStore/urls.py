@@ -25,4 +25,8 @@ urlpatterns = [
     path('logout/', views.logout),
     path('index/', views.store_index),
     path('userInfo/',views.user_info),
+    path('getfruitList/type',views.fruit_info),
+    path('fruitDetails/',views.fruit_details),
+    
 ]
+
