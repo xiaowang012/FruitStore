@@ -44,7 +44,7 @@ body{
                          <label for="password">密码:</label><input style="background: rgba(255,255,255,0.5);" type="password" class="form-control" name="password" /><p>{%if form.password.errors %}{{ form.password.errors.0 }} {% endif %}</p>
                     </div>
                     <div>
-                        <button  type="submit" class="btn btn-default btn-primary">登录</button><a style="line-height: 50px;font-size: larger;margin-left: 40px;" href="/register/">没有账号?去注册一个!</a>
+                        <button  type="submit" class="btn btn-success">登录</button><a style="line-height: 50px;font-size: larger;margin-left: 40px;color: green;" href="/register/">没有账号?去注册一个!</a>
                     </div>
                     <p> {%if dic1 %}{{ dic1.message }} {% endif %}</p>
                 </form>
