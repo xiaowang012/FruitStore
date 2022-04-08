@@ -136,3 +136,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+#设置session 过期时间2小时
+SESSION_COOKIE_AGE = 60*120
