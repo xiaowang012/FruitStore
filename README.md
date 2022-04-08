@@ -1,6 +1,6 @@
 # 使用 Django + Mysql 写的简单的水果商城系统
 
-## 1.界面展示
+## 1.界面截图
 
 ### （1）登录界面
 
@@ -10,21 +10,21 @@
 
 ![](./img/register.png)
 
-### （3） 普通用户书本查询下载界面
+### （3） 商城主页
 
-![home](./img/home.png)
+![home](./img/index.png)
 
-### （4）管理员用户管理界面
+### （4）商城水果列表页
 
-![](./img/user.png)
+![](./img/fruit_list.png)
 
-### （5）管理员书本管理界面
+### （5）商城水果详情页
 
-![book](./img/book.png)
+![book](./img/fruit_details.png)
 
-### （6）管理员权限管理界面
+### （6）个人信息页
 
-​	![](./img/permission.png)
+​	![](./img/user_info.png)
 
 ### 	
 
