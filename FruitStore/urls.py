@@ -24,9 +24,15 @@ urlpatterns = [
     path('register/', views.register),
     path('logout/', views.logout),
     path('index/', views.store_index),
+    path('index_send_message/', views.user_send_message),
     path('userInfo/',views.user_info),
+    path('update_user_info/',views.update_user_info),
+    path('update_password/',views.update_password),
     path('getfruitList/type',views.fruit_info),
-    path('fruitDetails/',views.fruit_details),
-    
+    path('fruitDetails/search',views.fruit_details),
+    path('management/',views.store_management), 
+    path('my_shopping_cart/',views.shopping_cart), 
+    path('settle_accounts/',views.payment_page),
+     
 ]
 
