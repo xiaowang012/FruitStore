@@ -1,9 +1,11 @@
 #coding=utf-8
+import re
 from django.http import HttpResponse
 from django.shortcuts import render,redirect
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required,permission_required
+from django.contrib import messages
 from . import forms
 from . import models
 import random
@@ -105,13 +107,13 @@ def store_index(request):
         #获取当前用户名
         current_user = request.user
         #前端数据
-        dic1 = {'current_user':current_user}
+        dic1 = {'current_user':current_user,'page_number':1}
         #查水果数据,-负号表示降序排列(最新时间)
         fruits_data = models.Fruits.objects.order_by('-add_fruit_time')[0:4]
         for i in fruits_data:
-            picture_file_name = i.fruit_pic_file_name
+            picture_file_name = str(i.fruit_pic_file_name)
             if ';' in picture_file_name:
-                pictures_list = str(i.fruit_pic_file_name).split(';')
+                pictures_list = picture_file_name.split(';')
                 i.pic_html = '/static/imgs/' + pictures_list[0]
             else:
                 i.pic_html = '/static/imgs/' + picture_file_name
@@ -125,9 +127,8 @@ def store_index(request):
                 num = int(len(commenting_user)/2)
                 str1 = commenting_user[0:num]
                 str2 = commenting_user[num:]
-                str1 = str1.replace(str1,'*'*num)
-                commenting_user = str1 + str2 
-                #更新到queryset众
+                commenting_user = str1.replace(str1,'*'*num) + str2 
+                #更新到queryset中
                 j.commenting_user = commenting_user
             #加入表格的随机样式
             j.type = random.choice(['error','info','success','warning']) 
@@ -253,13 +254,11 @@ def update_user_info(request):
                         type = 'alert alert-success alert-dismissable'
                         title = ' 成功!'
                         message = ' 修改个人信息成功!'
-
                 else:
                     #alert alert-dismissable alert-danger 
                     type = 'alert alert-dismissable alert-danger'
                     title = ' 错误!'
-                    message = ' 用户不存在!' 
-            
+                    message = ' 用户不存在!'        
             else:
                 type = 'alert alert-dismissable alert-danger'
                 title = ' 错误!'
@@ -286,7 +285,6 @@ def user_send_message(request):
         commenting_content = request.POST.get('message_content')
         anonymous = request.POST.get('anonymous')
         if form.is_valid():
-            
             if commenting_user == str(current_user):
                 if anonymous == 'on':
                     anonymous = True
@@ -296,30 +294,91 @@ def user_send_message(request):
                 comment_object = models.UserMessage(id = None,commenting_user = commenting_user,\
                     commenting_content = commenting_content,anonymous = anonymous)
                 comment_object.save()
+                #添加成功信息
+                messages.add_message(request, messages.SUCCESS, '留言成功!')
+            else:
+                #添加错误信息
+                messages.add_message(request, messages.ERROR, '权限错误! 无法评论!')
+        else:
+            #未通过表单校验,将错误提示添加到messages中
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            type = 'alert alert-dismissable alert-danger'
+            messages.add_message(request, messages.ERROR, errors)
         return redirect('/index/')
         
-            
-        
-        
-
-            
-            
-            
-
+#获取水果列表
+def get_fruit_info(request):
+    if request.method == 'GET':
+        fruit_type_id = request.GET.get('code')
+        #根据根据fruit_type_id 查询不同的水果
+        print(id)
+        return render(request,'fruit_list.html')
     
 
-#获取水果列表
-def fruit_info(request):
-    if request.method == 'GET':
-        return render(request,'fruit_list.html')
-    elif request.method == 'POST':
-        return render(request,'fruit_list.html')
-
 #首页查询水果(模糊查询)
-def search_fruits(request):
-    #UserInfo.objects.filter(user_name__contains=’王’)
-    #查询user_name中包含 ‘王’ 的人
-    pass
+def search_fruit_info(request):
+    current_user = request.user
+    if request.method == 'GET':
+        form = forms.SearchFruitsForm()
+        dic1 = {'current_user':current_user}
+        return render(request,'fruit_list_search.html',{'form':form,'dic1':dic1})
+    elif request.method == 'POST':
+        form = forms.SearchFruitsForm(request.POST)
+        if form.is_valid():
+            fruit_name = request.POST.get('fruitname')
+            #模糊查询水果
+            search_fruits1 = models.Fruits.objects.filter(fruit_name__contains = fruit_name).order_by('-add_fruit_time')[0:6]
+            for i in search_fruits1:
+                picture_file_name = str(i.fruit_pic_file_name)
+                if ';' in picture_file_name:
+                    pictures_list = picture_file_name.split(';')
+                    i.pic_html = '/static/imgs/' + pictures_list[0]
+                else:
+                    i.pic_html = '/static/imgs/' + picture_file_name
+
+            #数据为空给个消息提示
+            if len(search_fruits1) == 0:
+                messages.add_message(request,messages.ERROR,' 未查询到任何满足条件水果!')
+            #渲染页面
+            dic1 = {'current_user':current_user}
+            return render(request,'fruit_list_search.html',{'form':form,'dic1':dic1,'fruit_data':search_fruits1})
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            type = 'alert alert-dismissable alert-danger'
+            messages.add_message(request, messages.ERROR, errors)
+            print(request.get_full_path())
+            return redirect('/getfruitList/')
+    
+#首页水果翻页(查看更多)
+def index_fruit_page(request):
+    if request.method == 'GET':
+        page_number = request.GET.get('page_number')
+        try:
+            page_number = int(page_number)
+        except:
+            messages.add_message(request,messages.ERROR,'参数错误!')
+        else:
+            #根据页码查询分页数据,设置限制返回的起始值和结束值
+            search_start_num = (page_number-1)*4
+            search_end_num = page_number*4
+            #根据页码查询指定数据
+            fruits_data = models.Fruits.objects.order_by('-add_fruit_time')[search_start_num:search_end_num]
+            for i in fruits_data:
+                picture_file_name = str(i.fruit_pic_file_name)
+                if ';' in picture_file_name:
+                    pictures_list = picture_file_name.split(';')
+                    i.pic_html = '/static/imgs/' + pictures_list[0]
+                else:
+                    i.pic_html = '/static/imgs/' + picture_file_name
+            #
+            dic1 = {}
+            pass
+
 
 #水果商品详情页面
 def fruit_details(request):
