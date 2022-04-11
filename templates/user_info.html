@@ -17,6 +17,25 @@
     }
     </style>
 <body>
+    <script type="text/javascript">
+        function delete_confirm(url)
+        {
+        var r=confirm("您确定要删除吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function send_parameter(username,chinese_name,sex,birthday,constellation,address1,address2,address3,phone_number) {
+        $( '#username').val(username);
+        $( '#chinese_name').val(chinese_name);
+        $( '#sex').val(sex);
+        $( '#birthday').val(birthday);
+        $( '#constellation').val(constellation);
+        $( '#address1').val(address1);
+        $( '#address2').val(address2);
+        $( '#address3').val(address3);
+        $( '#phone_number').val(phone_number);
+        }
+    </script>
     <div class="container">
         <div class="row clearfix">
             <div class="col-md-12 column">
@@ -29,34 +48,49 @@
                                 用户个人信息
                             </h1>
                         </div>
+                        {%if dic2 %}
+                            <div style="margin-top: 20px;" class= "{{ dic2.type }}">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+                            <h4>
+                                {%if dic2 %}{{ dic2.title }} {% endif %}
+                            </h4> <strong>{%if dic2 %}{{ dic2.title }} {% endif %}</strong>{%if dic2 %}{{ dic2.message }} {% endif %}<a href="#" class="alert-link"></a>
+                            </div>
+                        {% endif %}
                         <div class="panel panel-success">
                             <div class="panel-heading">
                                 <h3 class="panel-title">
-                                    账号: heyi01
+                                     账号: {{ dic1.current_user }}
                                 </h3>
                             </div>
                             <div class="panel-footer">
-                                姓名: 张飞
+                                姓名: {{ user_dic.chinese_name }}
                             </div>
                             <div class="panel-footer">
-                                性别: 女
+                                性别: {{ user_dic.sex }}
                             </div>
                             <div class="panel-footer">
-                                生日: 2022-03-15
+                                生日: {{ user_dic.birthday }}
                             </div>
                             <div class="panel-footer">
-                                星座: 双子座
+                                星座: {{ user_dic.constellation }}
                             </div>
                             <div class="panel-footer">
-                                收货地址: 湖北省武汉市江夏区
+                                收货地址1: {{ user_dic.address1 }}
                             </div>
                             <div class="panel-footer">
-                                手机号码:15623874066
+                                收货地址2: {{ user_dic.address2 }}
+                            </div>
+                            <div class="panel-footer">
+                                收货地址3: {{ user_dic.address3 }}
+                            </div>
+                            <div class="panel-footer">
+                                手机号码: {{ user_dic.phone_number }}
                             </div>
                         </div>
-                        <a id="modal-207276" href="#modal-container-207276" role="button" class="btn btn-default btn-primary"  data-toggle="modal">编辑</a>
-                        <a id="modal-207277" href="#modal-container-207277" role="button" class="btn btn-default "  data-toggle="modal">编辑</a>
-                        <a type="submit" href="/index/" class="btn btn-default">返回</a>
+                        <a id="modal-207276" onclick="send_parameter('{{ dic1.current_user }}','{{ user_dic.chinese_name }}','{{ user_dic.sex }}','{{ user_dic.birthday }}','{{ user_dic.constellation }}','{{ user_dic.address1 }}','{{ user_dic.address2 }}','{{ user_dic.address3 }}','{{ user_dic.phone_number }}')" href="#modal-container-207276" role="button" class="btn btn-default btn-primary"  data-toggle="modal">编辑</a>
+                        <a id="modal-207277" href="/update_password/" role="button" class="btn btn-default "  >修改密码</a>
+
+                        <a type="submit" href="/index/" class="btn btn-primary">返回</a>
                           
                     </div>
                     <div class="col-md-4 column">
@@ -76,27 +110,38 @@
                     </h4>
                 </div>
                 <div class="modal-body">
-                    <form role="form">
+                    <form role="form" action="/update_user_info/" method="post" >
+                        {% csrf_token %}
                         <div class="form-group">
-                             <label for="exampleInputEmail1">账号</label><input type="email" class="form-control" id="exampleInputEmail1" readonly="readonly" />
+                             <label for="username">账号</label><input type="text" class="form-control" name="username" id="username" readonly="readonly" /><p>{%if form.username.errors %}{{ form.username.errors.0 }} {% endif %}</p>
                         </div>
                         <div class="form-group">
-                             <label for="exampleInputPassword1">姓名</label><input type="password" class="form-control" id="exampleInputPassword1" />
+                             <label for="chinese_name">姓名</label><input type="text" class="form-control" name="chinese_name" id="chinese_name" /><p>{%if form.chinese_name.errors %}{{ form.chinese_name.errors.0 }} {% endif %}</p>
+                        </div>
+                        <div  class="form-group">
+                            <label for="sex">性别</label>
+                            <select  name="sex" id="sex" class="form-control">
+                                <option value="Male">男</option>
+                                <option value="Female">女</option>
+                            </select>
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputPassword1">性别</label><input type="password" class="form-control" id="exampleInputPassword1" />
+                            <label for="birthday">生日</label><input type="date" class="form-control" name="birthday" id="birthday" /><p>{%if form.birthday.errors %}{{ form.birthday.errors.0 }} {% endif %}</p>
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputPassword1">生日</label><input type="password" class="form-control" id="exampleInputPassword1" />
+                            <label for="constellation">星座</label><input type="text" class="form-control" name="constellation" id="constellation" /><p>{%if form.constellation.errors %}{{ form.constellation.errors.0 }} {% endif %}</p>
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputPassword1">星座</label><input type="password" class="form-control" id="exampleInputPassword1" />
+                            <label for="address1">收货地址1</label><input type="text" class="form-control" name="address1" id="address1" /><p>{%if form.address1.errors %}{{ form.address1.errors.0 }} {% endif %}</p>
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputPassword1">收货地址</label><input type="password" class="form-control" id="exampleInputPassword1" />
+                            <label for="address2">收货地址2</label><input type="text" class="form-control" name="address2" id="address2" /><p>{%if form.address2.errors %}{{ form.address2.errors.0 }} {% endif %}</p>
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputPassword1">手机号码</label><input type="password" class="form-control" id="exampleInputPassword1" />
+                            <label for="address3">收货地址3</label><input type="text" class="form-control" name="address3" id="address3" /><p>{%if form.address3.errors %}{{ form.address3.errors.0 }} {% endif %}</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone_number">手机号码</label><input type="text" class="form-control" name="phone_number" id="phone_number" /><p>{%if form.phone_number.errors %}{{ form.phone_number.errors.0 }} {% endif %}</p>
                         </div>
                         <div>
                             <button type="submit" class="btn btn-primary">提交</button>
@@ -106,38 +151,8 @@
             </div> 
         </div>
     </div> 
-    <!-- 修改密码模态框 -->
-    <div class="modal fade" id="modal-container-207277" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-                    <h4 class="modal-title" id="myModalLabel">
-                        修改密码
-                    </h4>
-                </div>
-                <div class="modal-body">
-                    <form role="form" action="/update_password" method="post">
-                        {% csrf_token %}
-                        <div class="form-group">
-                             <label for="username">用户名:</label><input  type="text" value="{{ dic1.current_user }}" class="form-control" name="username" readonly="readonly" /><p>{%if form.username.errors %}{{ form.username.errors.0 }} {% endif %}</p>
-                        </div>
-                        <div class="form-group">
-                             <label for="old_password">原密码</label><input  type="password" class="form-control" name="old_password" /><p>{%if form.old_password.errors %}{{ form.old_password.errors.0 }} {% endif %}</p>
-                        </div>
-                        <div class="form-group">
-                            <label for="new_password1">新密码:</label><input  type="password" class="form-control" name="new_password1" /><p>{%if form.new_password1.errors %}{{ form.new_password1.errors.0 }} {% endif %}</p>
-                        </div>
-                        <div class="form-group">
-                            <label for="new_password2">再次确认</label><input  type="password" class="form-control" name="new_password2" /><p>{%if form.new_password2.errors %}{{ form.new_password2.errors.0 }} {% endif %}</p>
-                        </div>
-                            <button type="submit" class="btn btn-default btn-primary">确认修改</button>
-                        </div>
-                    </form>
-                </div>
-            </div> 
-        </div>
-    </div> 
+    
+    
 
 </body>
 </html>

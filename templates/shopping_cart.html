@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>水果商城-购物车</title>
+    <link rel="icon" href="/static/imgs/apple.png" type="image/x-icon"> 
+	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">  
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <div class="row clearfix">
+                    <div class="col-md-2 column">
+                        <img style="margin-top: 70px;" alt="" height="60px" width="165px" src="/static/imgs/index_logo_head.png" />
+                    </div>
+                    <div class="col-md-6 column">
+                        <form role="form" class="form-inline">
+                            <div class="form-group">
+                                 <label style="margin-top: 100px;" for="search_fruit"></label><input  placeholder="搜索你喜爱的水果!"  style="width: 450px;" type="text" class="form-control" id="search_fruit" name="search_fruit" />
+                                 <button type="submit" style="width: 80px;margin-left: 20px;" class="btn btn-success">搜索</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-4 column">
+                        <a style="margin-top :80px;float: right;" type="button" class="btn btn-success" href="" >我的购物车</a>
+                    </div>
+
+                </div>
+                <div style="margin-top:10px;margin-left: 15px;" class="panel panel-success">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <div>
+                                我的购物车(数量:{{ 2 }})
+                            </div>
+                        </h3>
+                    </div>
+                </div>
+                <!-- 订单列表 -->
+                <div class="container">
+                    <div class="row clearfix">
+                        <div  class="col-md-12 column">
+                            <p><img src="/static/imgs/logo_shop.png" alt="" height="30px" width="30px" >店铺:&nbsp水果超市</p>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <div style="" class="checkbox">
+                                                <label><input  type="checkbox" />全选</label>
+                                            </div>
+                                        </th>
+                                        <th>
+                                            商品信息
+                                        </th>
+                                        <th>
+                                            单价
+                                        </th>
+                                        <th>
+                                            规格
+                                        </th>
+                                        <th>
+                                            数量
+                                        </th>
+                                        <th>
+                                            操作
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div style="margin-top: 40px;" class="checkbox">
+                                                <label><input type="checkbox" /></label>
+                                            </div>
+                                        </td>
+                                        <td style="width: 500px;" >
+                                            <div style="margin-top: 20px;"  class="media">
+                                                <a href="#" class="pull-left"><img src="/static/imgs/fruit8.png"  class="media-object" alt='' width="100px" height="100px" /></a>
+                                                <div class="media-body">
+                                                    <h4>品名:&nbsp&nbsp苹果</h4>
+                                                    <p>描述:&nbsp&nbsp酸酸甜甜得苹果特价促销</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="color: red;" >
+                                            19.00元/斤
+                                        </td>
+                                        <td>
+                                            1kg
+                                        </td>
+                                        <td>
+                                            <input  type="number" oninput="value=value.replace(/[^\d]/g,'')" style="width:40px;"  min="0"/>    
+                                        </td>
+                                        <td>
+                                            <a role="button" class="btn btn-success" style="font-size: xx-small;" href="">删除</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="">
+                                        <td>
+                                            <div style="margin-top: 40px;" class="checkbox">
+                                                <label><input type="checkbox" /></label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div  class="media">
+                                                <a href="#" class="pull-left"><img src="/static/imgs/fruit2.png" class="media-object" alt=''  width="100px" height="100px" /></a>
+                                                <div class="media-body">
+                                                    <h4>品名:&nbsp&nbsp草莓</h4>
+                                                    <p>描述:&nbsp&nbsp酸酸甜甜得草莓便宜又实惠</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="color: red;" >
+                                            9.00元/斤
+                                        </td>
+                                        <td>
+                                            1kg
+                                        </td>
+                                        <td>
+                                            <input  type="number" oninput="value=value.replace(/[^\d]/g,'')" style="width:40px;"  min="0"/>  
+                                        </td>
+                                       
+                                        <td>
+                                            <a role="button" class="btn btn-success" style="font-size: xx-small;" href="">删除</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="margin-top: 40px;" class="checkbox">
+                                                <label><input type="checkbox" /></label>
+                                            </div>
+                                        </td>
+                                        <td style="width: 500px;" >
+                                            <div style="margin-top: 20px;"  class="media">
+                                                <a href="#" class="pull-left"><img src="/static/imgs/pic1.png"  class="media-object" alt='' width="100px" height="100px" /></a>
+                                                <div class="media-body">
+                                                    <h4>品名:&nbsp&nbsp猕猴桃</h4>
+                                                    <p>描述:&nbsp&nbsp好吃不贵的猕猴桃</p>
+                                        
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="color: red;" >
+                                            3.50元/斤
+                                        </td>
+                                        <td>
+                                            1kg
+                                        </td>
+                                        <td>
+                                            <input  type="number" oninput="value=value.replace(/[^\d]/g,'')" style="width:40px;"  min="0"/>    
+                                        </td>
+                                        <td>
+                                            <a role="button" class="btn btn-success" style="font-size: xx-small;" href="">删除</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="margin-top: 40px;" class="checkbox">
+                                                <label><input type="checkbox" /></label>
+                                            </div>
+                                        </td>
+                                        <td style="width: 500px;" >
+                                            <div style="margin-top: 20px;"  class="media">
+                                                <a href="#" class="pull-left"><img src="/static/imgs/fruit1.png"  class="media-object" alt='' width="100px" height="100px" /></a>
+                                                <div class="media-body">
+                                                    <h4>品名:&nbsp&nbsp橙子</h4>
+                                                    <p>描述:&nbsp&nbsp甜甜的香橙爱不释手</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="color: red;" >
+                                            1.99元/斤
+                                        </td>
+                                        <td>
+                                            1kg
+                                        </td>
+                                        <td>
+                                            <input  type="number" oninput="value=value.replace(/[^\d]/g,'')" style="width:40px;"  min="0"/>    
+                                        </td>
+                                        <td>
+                                            <a role="button" class="btn btn-success" style="font-size: xx-small;" href="">删除</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div style="margin-top: 40px;" class="checkbox">
+                                                <label><input type="checkbox" /></label>
+                                            </div>
+                                        </td>
+                                        <td style="width: 500px;" >
+                                            <div style="margin-top: 20px;"  class="media">
+                                                <a href="#" class="pull-left"><img src="/static/imgs/fruit9.png"  class="media-object" alt='' width="100px" height="100px" /></a>
+                                                <div class="media-body">
+                                                    <h4>品名:&nbsp&nbsp香蕉</h4>
+                                                    <p>描述:&nbsp&nbsp金黄的香蕉甜而不腻</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="color: red;" >
+                                            5.00元/斤
+                                        </td>
+                                        <td>
+                                            1kg
+                                        </td>
+                                        <td>
+                                            <input  type="number" oninput="value=value.replace(/[^\d]/g,'')" style="width:40px;"  min="0"/>    
+                                        </td>
+                                        <td>
+                                            <a role="button" class="btn btn-success" style="font-size: xx-small;" href="">删除</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <ul style="float: right;margin-top: 30px;" class="pagination">
+                                <li>
+                                     <a href="#">上一页</a>
+                                </li>
+                                <li class="active" >
+                                     <a href="#">1</a>
+                                </li>
+                                <li>
+                                     <a href="#">2</a>
+                                </li>
+                                <li>
+                                     <a href="#">3</a>
+                                </li>
+                                <li>
+                                     <a href="#">4</a>
+                                </li>
+                                <li>
+                                     <a href="#">5</a>
+                                </li>
+                                <li>
+                                     <a href="#">下一页</a>
+                                </li>
+                            </ul>
+                            <a role="button" style="background-color: crimson;" class="btn btn-success" href="/settle_accounts/">订单结算</a>
+                        </div>
+                    </div>
+                </div>
+                <nav style="height: 20px;" class="navbar navbar-default navbar-fixed-top" role="navigation">
+                    <div style="margin-left: 185px;margin-top: 15px;" class="navbar-header">
+                        <p> <a style="margin-left: 10px;color: black;" href="/index/">商城首页</a>&nbsp&nbsp&nbsp&nbsp&nbsp欢迎来到水果商店!<a style="margin-left: 15px;color: black;" href="/login/">点击登录!</a> <a style="margin-left: 15px;color: black;" href="/register/">免费注册!</a> <a style="margin-left: 15px;color: black;" href="/management/">管理入口</a> <img src="/static/imgs/index_user.png" width="20px" height="20px" style="margin-left: 540px;" alt=""><a style="margin-left: 10px;color: black;" href="/userInfo/">heyi01</a> <a style="margin-left: 40px; color: black;" href="/logout/">退出</a></p>
+                    </div>   
+                </nav>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <dl style="margin-top:20px;margin-left: 15px;" >
+                    <div>
+                        <dt>
+                            项目地址:<a href="https://github.com/xiaowang012/FruitStore.git" >点击进入</a>&nbsp邮箱: 1300202481@qq.com
+                        </dt>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>
+
+
