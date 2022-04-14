@@ -1,5 +1,4 @@
 #coding=utf-8
-import re
 from django.http import HttpResponse
 from django.shortcuts import render,redirect
 from django.contrib import auth
@@ -308,13 +307,83 @@ def user_send_message(request):
             messages.add_message(request, messages.ERROR, errors)
         return redirect('/index/')
         
-#获取水果列表
+#首页删除留言板留言
+def user_delete_message(request):
+    current_user = request.user
+    if request.method == 'GET':
+        delete_comment_id = request.GET.get('id')
+        try:
+            delete_comment_id = int(delete_comment_id)
+        except:
+            messages.add_message(request,messages.ERROR,'错误!  参数错误!')
+        else:
+            comments_info = models.UserMessage.objects.filter(id = delete_comment_id).first()
+            if comments_info:
+                if str(current_user) == comments_info.commenting_user:
+                    #判断当前操作用户是否为评论用户
+                    comments_info.delete()
+                    messages.add_message(request,messages.SUCCESS,' 删除成功!')
+                else:
+                    messages.add_message(request,messages.ERROR,'错误! 无法删除别人的评论!')
+            else:
+                messages.add_message(request,messages.ERROR,'错误!  删除失败!')
+        return redirect('/index/')
+
+#获取水果列表(第一页)
 def get_fruit_info(request):
+    current_user = request.user
     if request.method == 'GET':
         fruit_type_id = request.GET.get('code')
-        #根据根据fruit_type_id 查询不同的水果
-        print(id)
-        return render(request,'fruit_list.html')
+        try:
+            fruit_type_id = int(fruit_type_id)
+        except:
+            messages.add_message(request,messages.ERROR,' 错误! 参数错误!')
+        else:
+            #根据根据fruit_type_id水果
+            fruits_res = models.Fruits.objects.filter(fruit_type_id = fruit_type_id)[0:6]
+            for i in fruits_res:
+                picture_file_name = str(i.fruit_pic_file_name)
+                if ';' in picture_file_name:
+                    pictures_list = picture_file_name.split(';')
+                    i.pic_html = '/static/imgs/' + pictures_list[0]
+                else:
+                    i.pic_html = '/static/imgs/' + picture_file_name
+            #数据为空给个消息提示
+            if len(fruits_res) == 0:
+                messages.add_message(request,messages.ERROR,' 未查询到任何满足条件水果!')
+            #渲染页面
+            dic1 = {'current_user':current_user,'page_number':1,'fruit_type_id':fruit_type_id}
+            return render(request,'fruit_list.html',{'dic1':dic1,'fruit_data':fruits_res})
+
+#获取水果列表翻页
+def get_fruit_info_page(request):
+    if request.method == 'GET':
+        current_user = request.user
+        fruit_type_id = request.GET.get('type')
+        page_number = request.GET.get('code')
+        try:
+            fruit_type_id = int(fruit_type_id)
+            page_number = int(page_number)
+        except:
+            messages.add_message(request,messages.ERROR,' 错误! 参数错误!')
+        else:
+            #根据根据fruit_type_id 和页码查询不同的水果
+            search_start_num = (page_number-1)*6
+            search_end_num = page_number*6
+            fruits_res = models.Fruits.objects.filter(fruit_type_id = fruit_type_id)[search_start_num:search_end_num]
+            for i in fruits_res:
+                picture_file_name = str(i.fruit_pic_file_name)
+                if ';' in picture_file_name:
+                    pictures_list = picture_file_name.split(';')
+                    i.pic_html = '/static/imgs/' + pictures_list[0]
+                else:
+                    i.pic_html = '/static/imgs/' + picture_file_name
+            #数据为空给个消息提示
+            if len(fruits_res) == 0:
+                messages.add_message(request,messages.ERROR,' 未查询到任何满足条件水果!')
+            #渲染页面
+            dic1 = {'current_user':current_user,'page_number':page_number,'fruit_type_id':fruit_type_id}
+            return render(request,'fruit_list.html',{'dic1':dic1,'fruit_data':fruits_res})
     
 
 #首页查询水果(模糊查询)
@@ -322,7 +391,7 @@ def search_fruit_info(request):
     current_user = request.user
     if request.method == 'GET':
         form = forms.SearchFruitsForm()
-        dic1 = {'current_user':current_user}
+        dic1 = {'current_user':current_user,'page_number':1}
         return render(request,'fruit_list_search.html',{'form':form,'dic1':dic1})
     elif request.method == 'POST':
         form = forms.SearchFruitsForm(request.POST)
@@ -342,7 +411,7 @@ def search_fruit_info(request):
             if len(search_fruits1) == 0:
                 messages.add_message(request,messages.ERROR,' 未查询到任何满足条件水果!')
             #渲染页面
-            dic1 = {'current_user':current_user}
+            dic1 = {'current_user':current_user,'page_number':1,'fruit_name':fruit_name}
             return render(request,'fruit_list_search.html',{'form':form,'dic1':dic1,'fruit_data':search_fruits1})
         else:
             #未通过表单校验
@@ -354,9 +423,46 @@ def search_fruit_info(request):
             print(request.get_full_path())
             return redirect('/getfruitList/')
     
+#首页查询水果(模糊查询)翻页
+def search_fruit_info_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        form = forms.SearchFruitsForm()
+        fruit_name = request.GET.get('kw')
+        page_number = request.GET.get('code')
+        if fruit_name:
+            try:
+                page_number = int(page_number)
+            except:
+                messages.add_message(request,messages.ERROR,' 参数错误!')
+            else:
+                #模糊查询水果
+                #根据页码查询分页数据,设置限制返回的起始值和结束值
+                search_start_num = (page_number-1)*6
+                search_end_num = page_number*6
+                search_fruits1 = models.Fruits.objects.filter(fruit_name__contains = fruit_name).order_by('-add_fruit_time')[search_start_num:search_end_num]
+                for i in search_fruits1:
+                    picture_file_name = str(i.fruit_pic_file_name)
+                    if ';' in picture_file_name:
+                        pictures_list = picture_file_name.split(';')
+                        i.pic_html = '/static/imgs/' + pictures_list[0]
+                    else:
+                        i.pic_html = '/static/imgs/' + picture_file_name
+
+                #数据为空给个消息提示
+                if len(search_fruits1) == 0:
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件水果!')
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':page_number,'fruit_name':fruit_name}
+                return render(request,'fruit_list_search.html',{'form':form,'dic1':dic1,'fruit_data':search_fruits1})
+        else:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+
 #首页水果翻页(查看更多)
 def index_fruit_page(request):
     if request.method == 'GET':
+        current_user = request.user
+        form = forms.SearchFruitsForm()
         page_number = request.GET.get('page_number')
         try:
             page_number = int(page_number)
@@ -375,15 +481,70 @@ def index_fruit_page(request):
                     i.pic_html = '/static/imgs/' + pictures_list[0]
                 else:
                     i.pic_html = '/static/imgs/' + picture_file_name
-            #
-            dic1 = {}
-            pass
-
+            #渲染页面
+            dic1 = {'current_user':current_user,'page_number':page_number}
+            #查询留言板数据，最新时间排序限制10条
+            comments_data = models.UserMessage.objects.order_by('-commenting_time')[0:10]
+            for j in comments_data:
+                #根据anonymous字段(True/False)判断是否匿名，是否使用 *替换部分字符串
+                anonymous = j.anonymous
+                commenting_user = str(j.commenting_user)
+                if anonymous == 1:
+                    num = int(len(commenting_user)/2)
+                    str1 = commenting_user[0:num]
+                    str2 = commenting_user[num:]
+                    commenting_user = str1.replace(str1,'*'*num) + str2 
+                    #更新到queryset中
+                    j.commenting_user = commenting_user
+                #加入表格的随机样式
+                j.type = random.choice(['error','info','success','warning']) 
+            return render(request,'index.html',{'form':form,'list1':fruits_data,'list2':comments_data,'dic1':dic1})
 
 #水果商品详情页面
 def fruit_details(request):
+    current_user = request.user
     if request.method == 'GET':
-        return render(request,'fruit_details.html')
+        fruit_id = request.GET.get('id')
+        try:
+            fruit_id = int(fruit_id)
+        except:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            #查询指定水果和对应的评论信息
+            fruit_data = models.Fruits.objects.filter(id = fruit_id).first()
+            if fruit_data:
+                pictures_list1 = []
+                picture_file_name = str(fruit_data.fruit_pic_file_name)
+                if ';' in picture_file_name:
+                    pictures_list = picture_file_name.split(';')
+                    k = 0
+                    for j in pictures_list:
+                        k += 1
+                        pic_html = 'pic_html_' + str(k)
+                        pictures_list1.append('/static/imgs/' + j)
+                    fruit_data.pic_html = pictures_list1
+                else:
+                    pictures_list1.append('/static/imgs/' + picture_file_name)
+                    fruit_data.pic_html = pictures_list1
+            else:
+                messages.add_message(request,messages.ERROR,' 未查询到任何满足条件水果!')
+            #查询评论信息
+            comments_data = models.FruitComments.objects.filter(fruit_id = fruit_id).order_by('-commenting_time')[0:5]
+            for j in comments_data:
+                #根据anonymous字段(True/False)判断是否匿名，是否使用 *替换部分字符串
+                anonymous = j.anonymous
+                commenting_user = str(j.commenting_user)
+                if anonymous == 1:
+                    num = int(len(commenting_user)/2)
+                    str1 = commenting_user[0:num]
+                    str2 = commenting_user[num:]
+                    commenting_user = str1.replace(str1,'*'*num) + str2 
+                    #更新到queryset中
+                    j.commenting_user = commenting_user
+                j.type = random.choice(['error','info','success','warning'])
+            #渲染页面
+            dic1 = {'current_user':current_user}
+            return render(request,'fruit_details.html',{'dic1':dic1,'fruit_data':fruit_data,'comments_data':comments_data})
 
 #购物车页面
 def shopping_cart(request):
