@@ -57,6 +57,11 @@ class UserSendMessage(forms.Form):
 class SearchFruitsForm(forms.Form):
     fruitname = forms.CharField(min_length=1,max_length=100,error_messages={"required":"商品名称不能为空!","min_length":"商品名长度不能小于1!","max_length":"商品名长度不能大于100!"})
 
+#添加水果到购物车表单
+class AddFruitsToShoppingcart(forms.Form):
+    fruit_id = forms.CharField(min_length=1,max_length=10,error_messages={"required":"商品id不能为空!","min_length":"商品id长度不能小于1!","max_length":"商品id长度不能大于10!"})
+    fruit_number = forms.CharField(min_length=1,max_length=10,error_messages={"required":"购买数量不能为空!","min_length":"购买数量长度不能小于1!","max_length":"购买数量长度不能大于10!"})
+
 # #查询书本的表单
 # class SearchBookForm(forms.Form):
 #     book_name = forms.CharField(min_length=3,max_length=100,error_messages={"required":"输入框不能为空!","min_length":"搜索内容长度不能小于3!","max_length":"搜索内容长度不能大于100!"})
