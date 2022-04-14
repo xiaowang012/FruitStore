@@ -21,7 +21,7 @@
                             {% csrf_token %}
                             <div class="form-group">
                                  <label style="margin-top: 100px;" for="fruitname"></label><input  placeholder="搜索你喜爱的水果!"  style="width: 450px;" type="text" class="form-control" id="fruitname" name="fruitname" />
-                                 <button type="submit" style="width: 80px;margin-left: 20px;" class="btn btn-success">搜索</button>
+                                 <button type="submit" style="width: 80px;margin-left: 10px;" class="btn btn-success">搜索</button>
                                  <p>{%if form.fruitname.errors %}{{ form.fruitname.errors.0 }} {% endif %}</p>
                             </div>
                         </form>
@@ -170,13 +170,13 @@
                                         <ul style="margin-top:20px;float: right;" class="pagination">
                                             <li class="">
                                                 {% if dic1.page_number <= 2 %}
-                                                    <a  href="/getfruitList/type/page?type={{ dic1.fruit_type_id }}&code=1">上一页</a>
+                                                    <a  href="/getfruitList/page?kw={{ dic1.fruit_name }}&code=1">上一页</a>
                                                 {% else %}
-                                                    <a  href="/getfruitList/type/page?type={{ dic1.fruit_type_id }}&code={{ dic1.page_number|add:-1 }}">上一页</a>
+                                                    <a  href="/getfruitList/page?kw={{ dic1.fruit_name }}&code={{ dic1.page_number|add:-1 }}">上一页</a>
                                                 {% endif %}
                                                </li>
                                             <li class="">
-                                                 <a style="margin-left: 10px;" href="/getfruitList/type/page?type={{ dic1.fruit_type_id }}&code={{ dic1.page_number|add:1 }}">下一页</a>
+                                                 <a style="margin-left: 10px;" href="/getfruitList/page?kw={{ dic1.fruit_name }}&code={{ dic1.page_number|add:1 }}">下一页</a>
                                             </li>
                                         </ul>
 

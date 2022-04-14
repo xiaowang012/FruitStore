@@ -17,10 +17,12 @@
                         <img style="margin-top: 70px;" alt="" height="60px" width="165px" src="/static/imgs/index_logo_head.png" />
                     </div>
                     <div class="col-md-6 column">
-                        <form role="form" action="/searchFruit/" method="post" class="form-inline">
+                        <form role="form" action="/getfruitList/" method="post" class="form-inline">
+                            {% csrf_token %}
                             <div class="form-group">
-                                 <label style="margin-top: 100px;" for="search_fruit"></label><input  placeholder="搜索你喜爱的水果!"  style="width: 450px;" type="text" class="form-control" id="search_fruit" name="search_fruit" />
+                                 <label style="margin-top: 100px;" for="fruitname"></label><input  placeholder="搜索你喜爱的水果!"  style="width: 450px;" type="text" class="form-control" id="fruitname" name="fruitname" />
                                  <button type="submit" style="width: 80px;margin-left: 20px;" class="btn btn-success">搜索</button>
+                                 <p>{%if form.fruitname.errors %}{{ form.fruitname.errors.0 }} {% endif %}</p>
                             </div>
                         </form>
                     </div>
@@ -38,6 +40,15 @@
                         </h3>
                     </div>
                 </div>
+                <!-- 消息提醒 -->
+                {%if messages %}
+                    <div style="margin-top: 10px;" class= "alert alert-dismissable alert-danger">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+                        {% for msg in messages %}
+                            <strong>{{ msg }}&nbsp&nbsp</strong>
+                        {% endfor %}
+                    </div>
+                {% endif %}
                 <div class="row clearfix">
                     <div class="col-md-2 column">
                         <div  class="panel-group" id="panel-743294">
@@ -196,7 +207,12 @@
                                 {% endif %}
                             </div>
                         </div>
-                        <a style="float: right;font-size: small;" role="button" class="btn btn-success" href="/getfruitList/type?code=10" >更多水果</a>
+                        {% if dic1.page_number <= 2 %}
+                        <a style="margin-left: 400px;font-size: small;" role="button" class="btn btn-success" href="/morefruits/get?page_number=1" >上一页</a>
+                        {% else %}
+                            <a style="margin-left: 400px;font-size: small;" role="button" class="btn btn-success" href="/morefruits/get?page_number={{ dic1.page_number|add:-1 }}" >上一页</a>
+                        {% endif %}
+                        <a style="float: right;font-size: small;" role="button" class="btn btn-success" href="/morefruits/get?page_number={{ dic1.page_number|add:1 }}" >下一页</a>
                     </div>
                     <div class="col-md-4 column">
                         <h2>
@@ -212,7 +228,7 @@
                             <a id="modal-207300" href="#modal-container-207300" data-toggle="modal">给我留言</a>
                         </p>
                         <span style="margin-top: 40px;font-size: medium;" class="label label-success">留言板</span>
-                        <table style="margin-top: 10px;" class="table table-bordered table table-hover">
+                        <table style="margin-top: 10px;" class="table table-hover table-condensed">
                             <thead>
                                 <tr>
                                     <th>
@@ -230,12 +246,10 @@
                                             {{ item.commenting_user }}
                                         </td>
                                         <td>
-                                            {{ item.commenting_content }}
+                                            {{ item.commenting_content }} <a role="button" style="float: right;font-size: xx-small;" class="btn btn-success" href="/delete/message?id={{ item.id }}">删除</a>
                                         </td>
                                     </tr>
-                                {% endfor %}
-                                
-                                
+                                {% endfor %}   
                             </tbody>
                         </table>
                           
