@@ -1,5 +1,4 @@
 #coding=utf-8
-from email.policy import default
 from django.db import models
 from django.db.models.base import Model
 from django.db.models.fields import CharField, IntegerField, TextField,AutoField,DecimalField,BooleanField
@@ -49,6 +48,14 @@ class UserInfo(models.Model):
     address2 = CharField(max_length = 200,default = '')
     address3 = CharField(max_length = 200,default = '')
     add_userinfo_time = DateTimeField(default = timezone.now)
+
+#购物车表
+class ShoppingCart(models.Model):
+    id = AutoField(primary_key = True)
+    customer_id =  IntegerField()
+    fruit_id = IntegerField()
+    fruit_number = IntegerField()
+    add_fruit_time = DateTimeField(default = timezone.now)
 
 #订单表
 class FruitOrder(models.Model):
