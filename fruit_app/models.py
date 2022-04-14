@@ -9,6 +9,7 @@ from django.utils import timezone
 #商品表
 class Fruits(models.Model):
     id = AutoField(primary_key = True)
+    fruit_type_id = IntegerField (default = 0)
     fruit_name = CharField(max_length = 50,default = '')
     fruit_description = CharField(max_length = 200,default = '')
     fruit_price = DecimalField(max_digits = 5,decimal_places = 2)
@@ -17,6 +18,15 @@ class Fruits(models.Model):
     Sales = IntegerField (default = 0)
     fruit_pic_file_name = CharField(max_length = 200,default = '')
     add_fruit_time = DateTimeField(default = timezone.now)
+
+#商品评论信息表
+class FruitComments(models.Model):
+    id = AutoField(primary_key = True)
+    fruit_id = IntegerField(default = 0)
+    commenting_user = CharField(max_length = 50,default = '')
+    commenting_content = CharField(max_length = 200,default = '')
+    anonymous = BooleanField()
+    commenting_time = DateTimeField(default = timezone.now)
 
 #首页用户留言信息表
 class UserMessage(models.Model):
