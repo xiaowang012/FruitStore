@@ -385,7 +385,6 @@ def get_fruit_info_page(request):
             dic1 = {'current_user':current_user,'page_number':page_number,'fruit_type_id':fruit_type_id}
             return render(request,'fruit_list.html',{'dic1':dic1,'fruit_data':fruits_res})
     
-
 #首页查询水果(模糊查询)
 def search_fruit_info(request):
     current_user = request.user
@@ -546,9 +545,85 @@ def fruit_details(request):
             dic1 = {'current_user':current_user}
             return render(request,'fruit_details.html',{'dic1':dic1,'fruit_data':fruit_data,'comments_data':comments_data})
 
+#水果商品详情页面添加水果到购物车
+def add_to_shopping_cart(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.AddFruitsToShoppingcart(request.POST)
+        if form.is_valid():
+            fruit_id = request.POST.get('fruit_id')
+            fruit_number = request.POST.get('fruit_number')
+            try:
+                fruit_number = int(fruit_number)
+                fruit_id = int(fruit_id)
+            except:
+                messages.add_message(request,messages.ERROR,'参数错误!')
+            else:
+                #判断数量是否大于0，小于等于0不操作
+                if fruit_number > 0:
+                    #获取用户ID
+                    user_1 = User.objects.filter(username = current_user).first()
+                    if user_1:
+                        user_id = user_1.id
+                        test1 = models.ShoppingCart(id = None,customer_id = user_id,fruit_id = fruit_id,fruit_number = fruit_number)
+                        test1.save() 
+                        messages.add_message(request,messages.SUCCESS,' 加购成功!') 
+                    else:
+                        messages.add_message(request,messages.ERROR,' 用户不存在!') 
+
+                    #重定向到详情页面 
+                    last_url = '/fruitDetails/search?id=' + str(fruit_id)
+                    return redirect(last_url)     
+        else:
+            return render(request,'error_404.html')
+
 #购物车页面
 def shopping_cart(request):
-    return render(request,'shopping_cart.html')
+    current_user = request.user
+    if request.method == 'GET':
+        #通过user查ID
+        user_1 =  User.objects.filter(username = current_user).first()
+        if user_1:
+            #定义一个字典
+            list_shopping_cart_data = []
+            user_id = user_1.id
+            shopping_cart_datas =  models.ShoppingCart.objects.filter(customer_id = user_id).order_by('-add_fruit_time')[0:5]
+            for data in shopping_cart_datas:
+                #使用data里的fruit_id查询商品信息
+                fruit_data = models.Fruits.objects.filter(id = data.fruit_id).first()
+                if fruit_data:
+                    picture_file_name = str(fruit_data.fruit_pic_file_name)
+                    if ';' in picture_file_name:
+                        pictures_list = picture_file_name.split(';')
+                        fruit_data.pic_html = '/static/imgs/' + pictures_list[0]
+                    else:
+                        fruit_data.pic_html = '/static/imgs/' + picture_file_name
+                    dic_data = {'shopping_cart_id':data.id,'fruit_number':data.fruit_number,'pic_html':fruit_data.pic_html,'fruit_name':fruit_data.fruit_name,\
+                        'fruit_description':fruit_data.fruit_description,'fruit_price':fruit_data.fruit_price,'fruit_weight':fruit_data.fruit_weight}
+                    list_shopping_cart_data.append(dic_data)
+            #渲染页面
+            dic1 = {'current_user':current_user}
+            return render(request,'shopping_cart.html',{'shopping_cart_data':list_shopping_cart_data,'dic1':dic1})
+        else:    
+            return render(request,'error_404.html')
+
+#购物车删除条目
+def delete_shopping_cart__fruit(request):
+    current_user = request.user
+    if request.method == 'GET':
+        delete_fruit_id = request.GET.get('id')
+        try:
+            delete_fruit_id = int(delete_fruit_id)
+        except:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            shopping_cart_info =  models.ShoppingCart.objects.filter(id = delete_fruit_id).first()
+            if shopping_cart_info:
+                shopping_cart_info.delete()
+                messages.add_message(request,messages.ERROR,'  删除成功!')
+            else:
+                messages.add_message(request,messages.ERROR,' 数据不存在!')
+        return redirect('/my_shopping_cart/')
 
 #订单付款确认页面
 def payment_page(request):
