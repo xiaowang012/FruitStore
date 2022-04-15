@@ -38,6 +38,8 @@ urlpatterns = [
     path('fruitDetails/add/',views.add_to_shopping_cart),
     path('management/',views.store_management), 
     path('my_shopping_cart/',views.shopping_cart), 
+    path('my_shopping_cart/page',views.shopping_cart_page), 
+    path('shopping_cart/fruit/update/',views.update_shopping_cart_fruit_number), 
     path('shopping_cart/fruit/delete',views.delete_shopping_cart__fruit),
     path('settle_accounts/',views.payment_page),
      
