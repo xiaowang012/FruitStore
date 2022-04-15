@@ -85,28 +85,31 @@
                         </div>
                         <div class="col-md-6 column">
                             <div class="caption">
-                                <dt style="font-size: larger;" >
-                                    <h4>品名:&nbsp&nbsp{{ fruit_data.fruit_name }}</h4>
-                                    <h5>描述:&nbsp&nbsp{{ fruit_data.fruit_description }}</h5>
-                                </dt>
-                                <p style="margin-top: 20px;" >
-                                    价格:<span style="color: red;">&nbsp{{ fruit_data.fruit_price }}&nbsp元/斤 </span>
-                                </p>
-                                <p style="margin-top: 20px;" >
-                                    运费:<span> {{ fruit_data.transportation_price }}&nbsp元 </span>
-                                </p>
-                                <p style="margin-top: 20px;" >
-                                    规格:<span> {{ fruit_data.fruit_weight }} </span>
-                                </p>
-                                <p style="margin-top: 20px;" >
-                                    销量:<span> {{ fruit_data.Sales }} </span>
-                                </p>
-                                <p style="margin-top: 20px;" >
-                                    数量:<input type="number" oninput="value=value.replace(/[^\d]/g,'')" style="width:40px;margin-left: 10px;"  min="0"/>
-                                </p>
-                                <p>
-                                    <button style="margin-top: 20px;" class="btn btn-success" onclick="window.history.go(-1);" >返回</button> <a class="btn btn-success" style="margin-top: 20px; margin-left: 10px;background-color: crimson;" href="#">加入购物车</a>
-                                </p>
+                                <form role="form" action="/fruitDetails/add/" method="post">
+                                    {% csrf_token %}
+                                    <dt style="font-size: larger;" >
+                                        <h4>编号:<input name="fruit_id" type="text" value="{{ fruit_data.id }}"  style="width:40px;margin-left: 10px;border: none;" readonly="readonly" /></h4>
+                                        <h4>品名:&nbsp&nbsp{{ fruit_data.fruit_name }}</h4>
+                                        <h5>描述:&nbsp&nbsp{{ fruit_data.fruit_description }}</h5>
+                                    </dt>
+                                    <p style="margin-top: 20px;" >
+                                        价格:<span style="color: red;">&nbsp{{ fruit_data.fruit_price }}&nbsp元/斤 </span>
+                                    </p>
+                                    <p style="margin-top: 20px;" >
+                                        运费:<span> {{ fruit_data.transportation_price }}&nbsp元 </span>
+                                    </p>
+                                    <p style="margin-top: 20px;" >
+                                        规格:<span> {{ fruit_data.fruit_weight }} </span>
+                                    </p>
+                                    <p style="margin-top: 20px;" >
+                                        销量:<span> {{ fruit_data.Sales }} </span>
+                                    </p>
+                                    <p style="margin-top: 20px;" >
+                                        数量:<input name="fruit_number" type="number" oninput="value=value.replace(/[^\d]/g,'')" style="width:40px;margin-left: 10px;" value="1" min="0"/>
+                                    </p>
+                                    <button type="submit" class="btn btn-success" style="background-color: crimson;" >加入购物车</button>
+                                </form>
+                                <!-- <a style="margin-left: 110px;" class="btn btn-success" href="/fruitDetails/search?id={{ fruit_data.id }}" >返回</a>  -->
                             </div>
                         </div>
                     </div>    

@@ -17,10 +17,12 @@
                         <img style="margin-top: 70px;" alt="" height="60px" width="165px" src="/static/imgs/index_logo_head.png" />
                     </div>
                     <div class="col-md-6 column">
-                        <form role="form" class="form-inline">
+                        <form role="form" action="/getfruitList/" method="post" class="form-inline">
+                            {% csrf_token %}
                             <div class="form-group">
-                                 <label style="margin-top: 100px;" for="search_fruit"></label><input  placeholder="搜索你喜爱的水果!"  style="width: 450px;" type="text" class="form-control" id="search_fruit" name="search_fruit" />
+                                 <label style="margin-top: 100px;" for="fruitname"></label><input  placeholder="搜索你喜爱的水果!"  style="width: 450px;" type="text" class="form-control" id="fruitname" name="fruitname" />
                                  <button type="submit" style="width: 80px;margin-left: 20px;" class="btn btn-success">搜索</button>
+                                 <p>{%if form.fruitname.errors %}{{ form.fruitname.errors.0 }} {% endif %}</p>
                             </div>
                         </form>
                     </div>
@@ -33,11 +35,20 @@
                     <div class="panel-heading">
                         <h3 class="panel-title">
                             <div>
-                                我的购物车(数量:{{ 2 }})
+                                我的购物车
                             </div>
                         </h3>
                     </div>
                 </div>
+                <!-- 消息提醒 -->
+                {%if messages %}
+                    <div style="margin-top: 10px;margin-left: 15px;" class= "alert alert-success alert-dismissable">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+                        {% for msg in messages %}
+                            <strong>{{ msg }}&nbsp&nbsp</strong>
+                        {% endfor %}
+                    </div>
+                {% endif %}
                 <!-- 订单列表 -->
                 <div class="container">
                     <div class="row clearfix">
@@ -47,7 +58,7 @@
                                 <thead>
                                     <tr>
                                         <th>
-                                            <div style="" class="checkbox">
+                                            <div class="checkbox">
                                                 <label><input  type="checkbox" />全选</label>
                                             </div>
                                         </th>
@@ -69,35 +80,37 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>
-                                            <div style="margin-top: 40px;" class="checkbox">
-                                                <label><input type="checkbox" /></label>
-                                            </div>
-                                        </td>
-                                        <td style="width: 500px;" >
-                                            <div style="margin-top: 20px;"  class="media">
-                                                <a href="#" class="pull-left"><img src="/static/imgs/fruit8.png"  class="media-object" alt='' width="100px" height="100px" /></a>
-                                                <div class="media-body">
-                                                    <h4>品名:&nbsp&nbsp苹果</h4>
-                                                    <p>描述:&nbsp&nbsp酸酸甜甜得苹果特价促销</p>
+                                    {% for item in shopping_cart_data %}
+                                        <tr>
+                                            <td>
+                                                <div style="margin-top: 40px;" class="checkbox">
+                                                    <label><input type="checkbox" /></label>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td style="color: red;" >
-                                            19.00元/斤
-                                        </td>
-                                        <td>
-                                            1kg
-                                        </td>
-                                        <td>
-                                            <input  type="number" oninput="value=value.replace(/[^\d]/g,'')" style="width:40px;"  min="0"/>    
-                                        </td>
-                                        <td>
-                                            <a role="button" class="btn btn-success" style="font-size: xx-small;" href="">删除</a>
-                                        </td>
-                                    </tr>
-                                    <tr class="">
+                                            </td>
+                                            <td style="width: 500px;" >
+                                                <div style="margin-top: 20px;"  class="media">
+                                                    <a href="#" class="pull-left"><img src="{{ item.pic_html }}"  class="media-object" alt='' width="100px" height="100px" /></a>
+                                                    <div class="media-body">
+                                                        <h4>品名:&nbsp&nbsp{{ item.fruit_name }}</h4>
+                                                        <p>描述:&nbsp&nbsp{{ item.fruit_description }}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td style="color: red;" >
+                                                {{ item.fruit_price }}元/斤
+                                            </td>
+                                            <td>
+                                                {{ item.fruit_weight }}
+                                            </td>
+                                            <td>
+                                                <input  type="number" oninput="value=value.replace(/[^\d]/g,'')" style="width:40px;" value="{{ item.fruit_number }}"  min="0"/>    
+                                            </td>
+                                            <td>
+                                                <a role="button" class="btn btn-success" style="font-size: xx-small;" href="/shopping_cart/fruit/delete?id={{ item.shopping_cart_id }}">删除</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    <!-- <tr class="">
                                         <td>
                                             <div style="margin-top: 40px;" class="checkbox">
                                                 <label><input type="checkbox" /></label>
@@ -210,7 +223,7 @@
                                         <td>
                                             <a role="button" class="btn btn-success" style="font-size: xx-small;" href="">删除</a>
                                         </td>
-                                    </tr>
+                                    </tr> -->
                                 </tbody>
                             </table>
                             <ul style="float: right;margin-top: 30px;" class="pagination">
