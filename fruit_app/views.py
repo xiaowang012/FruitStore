@@ -8,6 +8,7 @@ from django.contrib import messages
 from . import forms
 from . import models
 import random
+import time
 
 # Create your views here.
 # 127.0.0.1:5001
@@ -602,10 +603,82 @@ def shopping_cart(request):
                         'fruit_description':fruit_data.fruit_description,'fruit_price':fruit_data.fruit_price,'fruit_weight':fruit_data.fruit_weight}
                     list_shopping_cart_data.append(dic_data)
             #渲染页面
-            dic1 = {'current_user':current_user}
+            dic1 = {'current_user':current_user,'page_number':1}
             return render(request,'shopping_cart.html',{'shopping_cart_data':list_shopping_cart_data,'dic1':dic1})
         else:    
             return render(request,'error_404.html')
+
+#购物车页面翻页
+def shopping_cart_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        page_number = request.GET.get('code')
+        try:
+            page_number = int(page_number)
+        except:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            #根据页码查询数据
+            search_start_num = (page_number-1)*5
+            search_end_num = page_number*5
+            #通过user查ID
+            user_1 =  User.objects.filter(username = current_user).first()
+            if user_1:
+                #定义一个字典
+                list_shopping_cart_data = []
+                user_id = user_1.id
+                shopping_cart_datas =  models.ShoppingCart.objects.filter(customer_id = user_id).order_by('-add_fruit_time')[search_start_num:search_end_num]
+                for data in shopping_cart_datas:
+                    #使用data里的fruit_id查询商品信息
+                    fruit_data = models.Fruits.objects.filter(id = data.fruit_id).first()
+                    if fruit_data:
+                        picture_file_name = str(fruit_data.fruit_pic_file_name)
+                        if ';' in picture_file_name:
+                            pictures_list = picture_file_name.split(';')
+                            fruit_data.pic_html = '/static/imgs/' + pictures_list[0]
+                        else:
+                            fruit_data.pic_html = '/static/imgs/' + picture_file_name
+                        dic_data = {'shopping_cart_id':data.id,'fruit_number':data.fruit_number,'pic_html':fruit_data.pic_html,'fruit_name':fruit_data.fruit_name,\
+                            'fruit_description':fruit_data.fruit_description,'fruit_price':fruit_data.fruit_price,'fruit_weight':fruit_data.fruit_weight}
+                        list_shopping_cart_data.append(dic_data)
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':page_number}
+                return render(request,'shopping_cart.html',{'shopping_cart_data':list_shopping_cart_data,'dic1':dic1})
+            else:    
+                return render(request,'error_404.html')
+
+
+#购物车修改商品数量
+def update_shopping_cart_fruit_number(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.UpdateFruitsNumberInShoppingcart(request.POST)
+        if form.is_valid():
+            shopping_cart_id = request.POST.get('shopping_cart_id')
+            fruit_number = request.POST.get('fruit_number')
+            try:
+                shopping_cart_id = int(shopping_cart_id)
+                fruit_number = int(fruit_number)
+            except:
+                messages.add_message(request,messages.ERROR,' 参数错误!')
+            else:
+                #更新数据到数据库中
+                shopping_info =  models.ShoppingCart.objects.filter(id = shopping_cart_id).first()
+                if shopping_info:
+                    shopping_info.fruit_number = fruit_number
+                    shopping_info.save()
+                    messages.add_message(request,messages.SUCCESS,' 修改数据成功!')
+                else:
+                    messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)
+        #重定向购物车
+        return redirect('/my_shopping_cart/')
+    
 
 #购物车删除条目
 def delete_shopping_cart__fruit(request):
@@ -620,14 +693,63 @@ def delete_shopping_cart__fruit(request):
             shopping_cart_info =  models.ShoppingCart.objects.filter(id = delete_fruit_id).first()
             if shopping_cart_info:
                 shopping_cart_info.delete()
-                messages.add_message(request,messages.ERROR,'  删除成功!')
+                messages.add_message(request,messages.SUCCESS,'  删除成功!')
             else:
                 messages.add_message(request,messages.ERROR,' 数据不存在!')
         return redirect('/my_shopping_cart/')
 
 #订单付款确认页面
 def payment_page(request):
-    return render(request,'order_balance_page.html')
+    current_user = request.user
+    if request.method == 'GET':
+        #通过user查ID
+        user_1 =  User.objects.filter(username = current_user).first()
+        if user_1:
+            #定义需付总金额
+            total_amount = 0.00
+            #定义一个字典
+            list_shopping_cart_data = []
+            user_id = user_1.id
+            shopping_cart_datas =  models.ShoppingCart.objects.filter(customer_id = user_id).order_by('-add_fruit_time').all()
+            for data in shopping_cart_datas:
+                #使用data里的fruit_id查询商品信息
+                fruit_data = models.Fruits.objects.filter(id = data.fruit_id).first()
+                if fruit_data:
+                    picture_file_name = str(fruit_data.fruit_pic_file_name)
+                    if ';' in picture_file_name:
+                        pictures_list = picture_file_name.split(';')
+                        fruit_data.pic_html = '/static/imgs/' + pictures_list[0]
+                    else:
+                        fruit_data.pic_html = '/static/imgs/' + picture_file_name
+                    
+                    #计算单品的需付金额(保留两位小数)
+                    #c = '%.2f'%a
+                    amount = data.fruit_number*2*fruit_data.fruit_price
+                    fruit_amount = float('%.2f'%amount)
+                    total_amount += fruit_amount
+    
+                    dic_data = {'shopping_cart_id':data.id,'fruit_number':data.fruit_number,'pic_html':fruit_data.pic_html,'fruit_name':fruit_data.fruit_name,\
+                        'fruit_description':fruit_data.fruit_description,'fruit_price':fruit_data.fruit_price,'fruit_weight':fruit_data.fruit_weight,'fruit_amount':fruit_amount}
+                    list_shopping_cart_data.append(dic_data)
+            #查询收货地址
+            address_info = models.UserInfo.objects.filter(user_id = user_id).first()
+            if address_info:
+                address1 = address_info.address1
+                address2 = address_info.address2
+                address3 = address_info.address3
+            else:
+                address1 = None
+                address2 = None
+                address3 = None
+            #生成订单号
+            order_number = 'F' + str(time.time()).replace('.','')
+            #渲染页面
+            dic1 = {'current_user':current_user,'address1':address1,'address2':address2,'address3':address3,'total_amount':total_amount,'order_number':order_number}
+            return render(request,'order_balance_page.html',{'shopping_cart_data':list_shopping_cart_data,'dic1':dic1})
+        else:
+            messages.add_message(request,messages.ERROR,' 数据不存在!')
+            return redirect('/settle_accounts/')
+            
 
 #付款(支付宝接口付款)
 def ali_pay(request):
