@@ -63,6 +63,8 @@ class FruitOrder(models.Model):
     customer =  CharField(max_length = 100,default = '')
     order_number = CharField(max_length = 100,default = '')
     money = DecimalField(max_digits = 8,decimal_places = 2)
+    pay_status = CharField(max_length = 100,default = '')
+    order_status = CharField(max_length = 100,default = '')
     add_order_time = DateTimeField(default = timezone.now)
 
 
