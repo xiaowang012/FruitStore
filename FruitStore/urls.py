@@ -35,8 +35,10 @@ urlpatterns = [
     path('getfruitList/',views.search_fruit_info),
     path('getfruitList/page',views.search_fruit_info_page),
     path('fruitDetails/search',views.fruit_details),
+    path('fruitDetails/add/',views.add_to_shopping_cart),
     path('management/',views.store_management), 
     path('my_shopping_cart/',views.shopping_cart), 
+    path('shopping_cart/fruit/delete',views.delete_shopping_cart__fruit),
     path('settle_accounts/',views.payment_page),
      
 ]
