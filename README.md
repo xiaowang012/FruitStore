@@ -40,7 +40,7 @@
 
 ###  （10）用户管理
 
-![](]./img/management_user.png)
+![](./img/management_user.png)
 
 ###  （11）权限管理
 
