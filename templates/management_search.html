@@ -131,13 +131,13 @@
                                     <ul style="float: right;" class="pagination">
                                         <li class="">
                                             {% if dic1.page_number <= 2 %}
-                                                <a href="/management/user?page_number=1">上一页</a>
+                                                <a href="/management/user/page?search={{ dic1.username }}&page_number=1">上一页</a>
                                             {% else %}
-                                                <a href="/management/user?page_number={{ dic1.page_number|add:-1 }}">上一页</a>
+                                                <a href="/management/user/page?search={{ dic1.username }}&page_number={{ dic1.page_number|add:-1 }}">上一页</a>
                                             {% endif %}
                                         </li>
                                         <li >
-                                             <a style="margin-left: 10px;" href="/management/user?page_number={{ dic1.page_number|add:1 }}">下一页</a>
+                                             <a style="margin-left: 10px;" href="/management/user/page?search={{ dic1.username }}&page_number={{ dic1.page_number|add:1 }}">下一页</a>
                                         </li>
                                     </ul>
                                 </div>
