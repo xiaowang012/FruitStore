@@ -38,21 +38,21 @@
 
 ​	![](./img/confirm_order.png)
 
-###  （10）后台管理
+###  （10）用户管理
 
-###  （11）用户管理
+![](]./img/management_user.png)
 
-###  （12）权限管理
+###  （11）权限管理
 
-###  （13）订单管理
+###  （12）订单管理
 
-###  （14）商品管理
+###  （13）商品管理
 
-###  （15）账目管理
+###  （14）账目管理
 
-###  （16）退货管理
+###  （15）退货管理
 
-### （17）访问策略
+### （16）访问策略
 
 
 ## 2.环境配置
@@ -77,11 +77,11 @@
 
 ​			创建虚拟环境文件夹：cmd中输入： virtualenv django_ENV(需要创建的虚拟环境文件夹名称)
 
-![windows_env](./img/windows_env.png)
+
 
 ​			激活虚拟环境: 在cmd中进入flask_ENV\Scripts目录，输入：activate即可激活虚拟环境，退出虚拟环境: deactivate
 
-![20127105813](./img/20127105813.png)
+
 
 ​			安装依赖包：激活虚拟环境后cd 进入项目目录，里面有一个requirements.txt依赖文件，安装只需要使用：pip install -r requirements.txt即可自动安装所有的依赖包。
 
@@ -161,11 +161,11 @@ source G:\django_books\testdata\django_database.sql (windows)
 
 ​         （2）在/etc/nginx/nginx.conf中修改配置：vim /etc/nginx/nginx.conf    注：server中的端口为nginx的监听端口， location中的地址为gunicorn 运行django wsgi服务的地址，下面两个location为配置的静态资源地址。如果出现加载静态资源报403的情况，需要把nginx中的配置：user nginx; 改为：user root; 修改完成后按esc 冒号 输入：wq 保存退出vim。
 
-![企业微信截图_20220301130213](./img/20220301130213.png)
+
 
 ​             (3) 重启nginx : nginx -s reload  查看nginx的服务 ：lsof -i:5000 查看到对应的进程即为配置成功 。运行nginx命令：nginx
 
-![企业微信截图_20220301131041](./img/20220301131041.png)
+
 
 ### （2）使用gunicorn 运行服务
 
