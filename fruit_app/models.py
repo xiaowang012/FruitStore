@@ -55,6 +55,7 @@ class ShoppingCart(models.Model):
     customer_id =  IntegerField()
     fruit_id = IntegerField()
     fruit_number = IntegerField()
+    order_number = CharField(max_length = 100,default = '0')
     add_fruit_time = DateTimeField(default = timezone.now)
 
 #订单表
