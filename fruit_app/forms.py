@@ -11,8 +11,8 @@ class UserForm(forms.Form):
 #注册表单  
 class RegisterForm(forms.Form):
     username = forms.CharField(min_length=3,max_length=10,error_messages={"required":"用户名不能为空!","min_length":"用户名长度不能小于3!","max_length":"用户名长度不能大于10!"})
-    password = forms.CharField(widget=PasswordInput,min_length=3,max_length=10,error_messages={"required":"密码不能为空!","min_length":"密码长度不能小于3!","max_length":"密码长度不能大于10!"})
-    password1 = forms.CharField(widget=PasswordInput,min_length=3,max_length=10,error_messages={"required":"密码不能为空!","min_length":"密码长度不能小于3!","max_length":"密码长度不能大于10!"})
+    password = forms.CharField(widget=PasswordInput,min_length=3,max_length=30,error_messages={"required":"密码不能为空!","min_length":"密码长度不能小于3!","max_length":"密码长度不能大于30!"})
+    password1 = forms.CharField(widget=PasswordInput,min_length=3,max_length=30,error_messages={"required":"密码不能为空!","min_length":"密码长度不能小于3!","max_length":"密码长度不能大于30!"})
     def clean(self):  # 全局钩子 确认两次输入的密码是否一致。
         val = self.cleaned_data.get("password")
         r_val = self.cleaned_data.get("password1")
@@ -76,9 +76,16 @@ class ManagementUserUpdate(forms.Form):
     update_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"id不能为空!","min_length":"id长度不能小于1!","max_length":"id长度不能大于50!"})
     update_email = forms.CharField(min_length=1,max_length=100,error_messages={"required":"邮箱不能为空!","min_length":"邮箱长度不能小于1!","max_length":"邮箱长度不能大于100!"})
 
-# #导入用户表单
-# class AddUserForm(forms.Form):
-#     user_file = forms. FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
+#后台管理用户管理添加用户
+class ManagementUserAdd(forms.Form):
+    username = forms.CharField(min_length=3,max_length=10,error_messages={"required":"用户名不能为空!","min_length":"用户名长度不能小于3!","max_length":"用户名长度不能大于10!"})
+    password = forms.CharField(widget=PasswordInput,min_length=3,max_length=30,error_messages={"required":"密码不能为空!","min_length":"密码长度不能小于3!","max_length":"密码长度不能大于30!"})
+    email = forms.CharField(min_length=3,max_length=50,error_messages={"required":"邮箱不能为空!","min_length":"邮箱长度不能小于3!","max_length":"邮箱长度不能大于50!"})
+    group_id = forms.CharField(min_length=1,max_length=1,error_messages={"required":"用户组ID不能为空!","min_length":"用户组ID长度不能小于1!","max_length":"用户组ID长度不能大于1!"})
+
+# 后台管理用户管理导入用户
+class ManagementUserImport(forms.Form):
+    user_file = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
 
 # #修改书本信息的表单
 # class UpdateBooksForm(forms.Form):
