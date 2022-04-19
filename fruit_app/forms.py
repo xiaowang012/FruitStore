@@ -71,6 +71,11 @@ class UpdateFruitsNumberInShoppingcart(forms.Form):
 class SearchUserForm(forms.Form):
     username = forms.CharField(min_length=1,max_length=100,error_messages={"required":"用户名不能为空!","min_length":"用户名长度不能小于1!","max_length":"用户名长度不能大于100!"})
      
+#后台管理用户管理修改用户数据
+class ManagementUserUpdate(forms.Form):
+    update_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"id不能为空!","min_length":"id长度不能小于1!","max_length":"id长度不能大于50!"})
+    update_email = forms.CharField(min_length=1,max_length=100,error_messages={"required":"邮箱不能为空!","min_length":"邮箱长度不能小于1!","max_length":"邮箱长度不能大于100!"})
+
 # #导入用户表单
 # class AddUserForm(forms.Form):
 #     user_file = forms. FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
