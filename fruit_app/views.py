@@ -871,6 +871,102 @@ def user_management_search_user_page(request):
         else:
             messages.add_message(request,messages.ERROR,' 参数错误!')
 
+#用户管理停用账号
+def user_management_disable_user(request):
+    current_user = request.user
+    if request.method == 'GET':
+        user_id = request.GET.get('id')
+        try:
+            user_id = int(user_id)
+        except:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            userinfo = User.objects.filter(id = user_id).first()
+            if userinfo:
+                if userinfo.is_active == True:
+                    userinfo.is_active = False
+                    userinfo.save()
+                    messages.add_message(request,messages.ERROR,' 停用成功!')
+                else:
+                    messages.add_message(request,messages.ERROR,' 此账号已经处于停用状态!')
+            else:
+                messages.add_message(request,messages.ERROR,' 用户不存在!')
+        return redirect('/management/')
+
+#用户管理启用账号
+def user_management_enable_user(request):
+    current_user = request.user
+    if request.method == 'GET':
+        user_id = request.GET.get('id')
+        try:
+            user_id = int(user_id)
+        except:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            userinfo = User.objects.filter(id = user_id).first()
+            if userinfo:
+                if userinfo.is_active == False:
+                    userinfo.is_active = True
+                    userinfo.save()
+                    messages.add_message(request,messages.ERROR,' 启用成功!')
+                else:
+                    messages.add_message(request,messages.ERROR,' 此账号已经处于启用状态!')
+            else:
+                messages.add_message(request,messages.ERROR,' 用户不存在!')
+        return redirect('/management/')
+
+#用户管理删除账号
+def user_management_delete_user(request):
+    current_user = request.user
+    if request.method == 'GET':
+        user_id = request.GET.get('id')
+        try:
+            user_id = int(user_id)
+        except:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            userinfo = User.objects.filter(id = user_id).first()
+            if userinfo:
+                userinfo.delete()
+                userinfo.save()
+                messages.add_message(request,messages.SUCCESS,' 删除成功!')
+            else:
+                messages.add_message(request,messages.ERROR,' 删除失败!')
+        return redirect('/management/')
+
+
+#用户管理修改账号
+def user_management_update_user(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementUserUpdate(request.POST)
+        if form.is_valid():
+            update_id = request.POST.get('update_id')
+            update_email = request.POST.get('update_email')
+            print(update_id,update_email)
+            userinfo = User.objects.filter(id = update_id).first()
+            if userinfo:
+                if userinfo.email != update_email:
+                    userinfo.email = update_email
+                    userinfo.save()
+                    messages.add_message(request,messages.SUCCESS,' 更新成功!')
+                else:
+                    messages.add_message(request,messages.SUCCESS,' 无需更新!')
+            else:
+                messages.add_message(request,messages.ERROR,' 用户不存在!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)
+        return redirect('/management/')
+
+            
+
+#用户管理添加账号
+
+#用户管理导入账号
 
 #权限管理
 def permission_management(request):
