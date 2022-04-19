@@ -9,6 +9,31 @@
 	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
+    <script type="text/javascript">
+        function delete_confirm(url)
+        {
+        var r=confirm("您确定要删除吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function open_confirm(url)
+        {
+        var r=confirm("您确定要启用此账号吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function close_confirm(url)
+        {
+        var r=confirm("您确定要停用此账号吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function update_user(id,email) {
+        $( '#update_id').val(id);
+        $( '#update_email').val(email);
+        }
+       
+    </script>
     <div class="container">
         <div class="row clearfix">
             <div class="col-md-12 column">
@@ -68,7 +93,7 @@
                                         <form class="navbar-form navbar-left" role="search" action="/searchUser/" method="post">
                                             {% csrf_token %}
                                             <div class="form-group">
-                                                <input placeholder="输入用户名搜索!" type="text" name="username" class="form-control" />
+                                                <input placeholder="输入用户名搜索" type="text" name="username" class="form-control" />
                                             </div> <button type="submit" style="margin-left: 10px;" class="btn btn-primary">查询</button><a role="button" class="btn btn-default" style="margin-left: 10px;" href="/management/">重置</a>
                                         </form>
                                     </div>
@@ -93,7 +118,7 @@
                                             启用状态
                                         </th>
                                         <th>
-                                            操作
+                                            操作 <a style="margin-left: 75px;font-size: x-small;" role="button" class="btn btn-primary" href="">添加</a><a style="margin-left: 10px;font-size: x-small;" role="button" class="btn btn-default"  href="">导入</a>
                                         </th>
                                     </tr>
                                 </thead>
@@ -116,7 +141,10 @@
                                                 {{ item.is_active }}
                                             </td>
                                             <td>
-                                                <a role="button" class="btn btn-primary" style="font-size: xx-small;"  href="">停用</a><a role="button"  class="btn btn-default" style="margin-left: 10px;font-size: xx-small;" href="">启用</a><a role="button" class="btn btn-success" style="margin-left: 10px;font-size: xx-small;" href="">修改</a><a role="button" class="btn btn-danger" style="margin-left: 10px;font-size: xx-small;" href="">删除</a>
+                                                <button class="btn btn-primary" style="font-size: xx-small;" onclick="close_confirm('/managementUser/disable?id={{ item.id }}')">停用</button>
+                                                <button class="btn btn-default" style="font-size: xx-small;" onclick="open_confirm('/managementUser/enable?id={{ item.id }}')">启用</button>
+                                                <a id="modal-207301" onclick="update_user('{{ item.id}}','{{ item.email }}')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
+                                                <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/managementUser/delete?id={{ item.id }}')" > 删除</button>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -145,6 +173,31 @@
                         </div>
                     </div>
                 </div>
+                <!-- 修改用户信息模态框 -->
+                <div class="modal fade" id="modal-container-207301" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    修改用户信息(只允许修改邮箱)
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <form role="form" action="/managementUser/update/" method="post" >
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="update_id">ID</label><input type="text" class="form-control" name="update_id" readonly="readonly" id="update_id" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_email">邮箱</label><input type="text" class="form-control" name="update_email" id="update_email" />
+                                    </div>
+                                    <button type="submit" class="btn btn-default btn-primary">提交</button>
+                                </form>
+                            </div>
+                        </div> 
+                    </div>
+                </div> 
                 <nav style="height: 20px;" class="navbar navbar-default navbar-fixed-top" role="navigation">
                     <div style="margin-left: 185px;margin-top: 15px;" class="navbar-header">
                         <p> <a style="margin-left: 10px;color: black;" href="/index/">商城首页</a>&nbsp&nbsp&nbsp&nbsp&nbsp欢迎来到水果商店!<a style="margin-left: 15px;color: black;" href="/login/">点击登录!</a> <a style="margin-left: 15px;color: black;" href="/register/">免费注册!</a> <a style="margin-left: 15px;color: black;" href="/management/">管理入口</a> <img src="/static/imgs/index_user.png" width="20px" height="20px" style="margin-left: 540px;" alt=""><a style="margin-left: 10px;color: black;" href="/userInfo/">{{ dic1.current_user }}</a> <a style="margin-left: 40px; color: black;" href="/logout/">退出</a></p>
