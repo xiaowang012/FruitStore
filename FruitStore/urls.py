@@ -36,15 +36,19 @@ urlpatterns = [
     path('getfruitList/page',views.search_fruit_info_page),
     path('fruitDetails/search',views.fruit_details),
     path('fruitDetails/add/',views.add_to_shopping_cart),
-    path('management/',views.user_management), 
-    path('management/user',views.user_management_page), 
-    path('searchUser/',views.user_management_search_user),
-    path('management/user/page',views.user_management_search_user_page),
     path('my_shopping_cart/',views.shopping_cart), 
     path('my_shopping_cart/page',views.shopping_cart_page), 
     path('shopping_cart/fruit/update/',views.update_shopping_cart_fruit_number), 
     path('shopping_cart/fruit/delete',views.delete_shopping_cart__fruit),
     path('settle_accounts/',views.payment_page),
-     
+    path('management/',views.user_management), 
+    path('management/user',views.user_management_page), 
+    path('searchUser/',views.user_management_search_user),
+    path('management/user/page',views.user_management_search_user_page),
+    path('managementUser/disable',views.user_management_disable_user),
+    path('managementUser/enable',views.user_management_enable_user),
+    path('managementUser/delete',views.user_management_delete_user),
+    path('managementUser/update/',views.user_management_update_user),
+
 ]
 
