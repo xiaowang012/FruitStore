@@ -1,14 +1,16 @@
 #coding=utf-8
-from django.http import HttpResponse
+from django.http import HttpResponse,FileResponse
 from django.shortcuts import render,redirect
 from django.contrib import auth
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User,Group
 from django.contrib.auth.decorators import login_required,permission_required
 from django.contrib import messages
 from . import forms
 from . import models
 import random
 import time
+import os
+import xlrd
 
 # Create your views here.
 # 127.0.0.1:5001
@@ -770,12 +772,11 @@ def payment_page(request):
 def ali_pay(request):
     pass
 
-
 #用户管理
 def user_management(request):
     current_user = request.user
     if request.method == 'GET':
-        user_info = User.objects.all()[0:10]
+        user_info = User.objects.all().order_by('-date_joined')[0:10]
         for j in user_info:
             #给表格加style
             j.style = random.choice(['error','info','success','warning']) 
@@ -787,7 +788,7 @@ def user_management(request):
         dic1 = {'current_user':current_user,'page_number':1}
         return render(request,'management.html',{'dic1':dic1,'user_data':user_info})
 
-#用户管理
+#用户管理翻页
 def user_management_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -800,7 +801,7 @@ def user_management_page(request):
             #根据页码查询数据
             search_start_num = (page_number-1)*10
             search_end_num = page_number*10
-            user_info = User.objects.all()[search_start_num:search_end_num]
+            user_info = User.objects.all().order_by('-date_joined')[search_start_num:search_end_num]
             for j in user_info:
                 #给表格加style
                 j.style = random.choice(['error','info','success','warning']) 
@@ -962,21 +963,155 @@ def user_management_update_user(request):
             messages.add_message(request,messages.ERROR,errors)
         return redirect('/management/')
 
-            
-
 #用户管理添加账号
+def user_management_add_user(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementUserAdd(request.POST)
+        if form.is_valid():
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            email = request.POST.get('email')
+            group_id = request.POST.get('group_id')
+            if username and password and email and group_id:
+                if not User.objects.filter(username = username).first():
+                    User.objects.create_user(username = username,password = password)
+                    user_info = User.objects.filter(username = username).first()
+                    if user_info:
+                        user_info.email = email
+                        user_info.save()
+                        #根据不同的group_id 分配不同的用户组
+                        if group_id == '1':
+                            group1 = Group.objects.get(name = 'admin')
+                            group1.user_set.add(user_info)
+                        elif group_id == '2': 
+                            group1 = Group.objects.get(name = 'customer')
+                            group1.user_set.add(user_info)
+                         
+                        messages.add_message(request,messages.SUCCESS,'添加用户 ' + username + ' 成功!')
+                    else:
+                        messages.add_message(request,messages.ERROR,'添加用户 ' + username + ' 失败!')
+                else:
+                    messages.add_message(request,messages.ERROR,'添加用户 ' + username + ' 失败! 重复注册!')
+            else:
+                messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            ##未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)
+    return redirect('/management/')
 
 #用户管理导入账号
+def user_management_import_user(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementUserImport(request.POST,request.FILES)
+        if form.is_valid():
+            user_file = request.FILES.get('user_file')
+            if user_file:
+                file_extension = os.path.splitext(user_file.name)[-1]
+                if '.xlsx' == file_extension or '.xls' == file_extension:
+                    file_name =  str(time.time()) + file_extension
+                    user_file_dir = os.getcwd() + os.path.join(os.sep,'temp', file_name)
+                    #保存文件到临时文件目录temp
+                    with open(user_file_dir,'wb') as f:
+                        for chunk in user_file.chunks():
+                            f.write(chunk)
+                    #读取excel写入数据库
+                    work_book = xlrd.open_workbook (user_file_dir)
+                    ws = work_book.sheet_by_name('Sheet1')
+                    #读取第一行数据
+                    if ws.nrows != 0:
+                        line_1_values = ws.row_values(0)
+                        if line_1_values == ['用户名','密码','邮箱','用户组ID']:
+                            message_list = []
+                            for i in range(1,ws.nrows):
+                                try:
+                                    values_list = ws.row_values(i)
+                                    username = values_list[0]
+                                    password = values_list[1]
+                                    email = values_list[2]
+                                    group_id = values_list[3]
+                                
+                                    if not User.objects.filter(username = username).first():
+                                        User.objects.create_user(username = username,password = password)
+                                        user_info = User.objects.filter(username = username).first()
+                                        if user_info:
+                                            user_info.email = email 
+                                            user_info.save()
+                                            #根据不同的group_id 分配不同的用户组
+                                            if int(group_id) == 1:
+                                                group1 = Group.objects.get(name = 'admin')
+                                                group1.user_set.add(user_info)
+                                            elif int(group_id) == 2: 
+                                                group1 = Group.objects.get(name = 'customer')
+                                                group1.user_set.add(user_info)
+                                            message = '导入用户: ' + username + ' 成功!'
+                                            message_list.append(message)
+                                        else:
+                                            message= '更新' + username + '邮箱,用户组失败!'
+                                            message_list.append(message)
+                                    else:
+                                        message = '用户: ' + username +' 已存在，导入失败! '
+                                        message_list.append(message)
+                                except:
+                                    pass
+                            msgs = ''
+                            for msg in message_list:
+                                msgs += msg
+                            messages.add_message(request,messages.ERROR,msgs)
+                        else:
+                            messages.add_message(request,messages.ERROR,' 数据格式错误!')
+                    else:
+                        messages.add_message(request,messages.ERROR,' 空数据!')
+                else:
+                    messages.add_message(request,messages.ERROR,' 请上传excel文件!')
+
+            else:
+                messages.add_message(request,messages.ERROR,' 文件不存在!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)
+        return redirect('/management/')
+
+#用户管理导入账号模板下载
+def user_management_download_import_user_file(request):
+    if request.method == 'GET':
+        user_template_file = os.getcwd() + os.path.join(os.sep,'media','template_import_user.zip')
+        if os.path.isfile(user_template_file) == True:
+            try:
+                f = open(user_template_file,'rb')
+                response = FileResponse(f)
+                response['Content-Type'] = 'application/octet-stream'
+                response['Content-Disposition'] = 'attachment;filename=' + 'template_import_user.zip'
+                return response
+            except:
+                messages.add_message(request,messages.ERROR,' 下载失败!')
+                return redirect('/management/')
+        else:
+            messages.add_message(request,messages.ERROR,' 模板文件不存在!')
+            return redirect('/management/')
 
 #权限管理
 def permission_management(request):
-    pass
+    current_user = request.user
+    if request.method == 'GET':
+        permission_info = models.RoutePermission.objects.all().order_by('-add_route_permission_time')[0:10]
+        for j in permission_info:
+            #给表格加style
+            j.style = random.choice(['error','info','success','warning']) 
+        dic1 = {'current_user':current_user,'page_number':1}
+        return render(request,'management_permission.html',{'dic1':dic1,'permission_data':permission_info})
+    
 
 #订单管理
 def order_management(request):
     pass
-
-
 
 #商品管理
 def goods_management(request):
