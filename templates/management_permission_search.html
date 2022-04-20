@@ -9,6 +9,31 @@
 	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
+    <script type="text/javascript">
+        function delete_confirm(url)
+        {
+        var r=confirm("您确定要删除吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function open_confirm(url)
+        {
+        var r=confirm("您确定要启用此账号吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function close_confirm(url)
+        {
+        var r=confirm("您确定要停用此账号吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function update_user(id,email) {
+        $( '#update_id').val(id);
+        $( '#update_email').val(email);
+        }
+       
+    </script>
     <div class="container">
         <div class="row clearfix">
             <div class="col-md-12 column">
@@ -25,11 +50,11 @@
                         <div class="col-md-12 column">
                             <div style="margin-top: 20px;" class="tabbable" id="tabs-577358">
                                 <ul class="nav nav-tabs">
-                                    <li class="active">
+                                    <li >
                                          <a href="/management/" >用户管理</a>
                                     </li>
-                                    <li>
-                                        <a href="/management/permission/">权限管理</a>
+                                    <li class="active" >
+                                         <a href="/management/permission/">权限管理</a>
                                     </li>
                                     <li>
                                         <a href="/test3/" >商品管理</a>
@@ -49,7 +74,7 @@
                                 </ul>
                             </div>
                             <div style="margin-top: 20px;margin-left: -10px;" class="col-md-12 column">
-                                <span style="font-size: medium ;" class="label label-info">用户管理</span>
+                                <span style="font-size: medium ;" class="label label-info">权限管理</span>
                             </div>
                             <div style="margin-top:10px;margin-left: -10px;" class="col-md-12 column">
                                 {%if messages %}
@@ -65,12 +90,26 @@
                             <div class="col-md-12 column">
                                 <nav style="margin-left: -10px;" class="navbar navbar-default" role="navigation">
                                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                                        <form class="navbar-form navbar-left" role="search" action="/searchUser/" method="post">
+                                        <ul class="nav navbar-nav">
+                                            <li class="dropdown">
+                                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">选择用户组<strong class="caret"></strong></a>
+                                                <ul  class="dropdown-menu">
+                                                    <li>
+                                                         <a href="/management/permission/searchPermission/type?code=1">admin</a>
+                                                    </li>
+                                                    <li>
+                                                         <a href="/management/permission/searchPermission/type?code=2">customer</a>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                        <form class="navbar-form navbar-left" role="search" action="/management/permission/searchPermission/" method="post">
                                             {% csrf_token %}
                                             <div class="form-group">
-                                                <input placeholder="输入用户名搜索" type="text" name="username" class="form-control" />
-                                            </div> <button type="submit" style="margin-left: 10px;" class="btn btn-primary">查询</button><a role="button" class="btn btn-default" style="margin-left: 10px;" href="/management/">重置</a>
+                                                <input placeholder="输入URL搜索" type="text" name="url" class="form-control" />
+                                            </div> <button type="submit" style="margin-left: 10px;" class="btn btn-primary">查询</button><a role="button" class="btn btn-default" style="margin-left: 10px;" href="/management/permission">重置</a>
                                         </form>
+                                        
                                     </div>
                                 </nav>
                             </div>
@@ -81,42 +120,40 @@
                                             ID
                                         </th>
                                         <th>
-                                            用户名
+                                            用户组
                                         </th>
                                         <th>
-                                            邮箱
+                                            URL地址
                                         </th>
                                         <th>
-                                            上次登录时间
+                                            描述信息
                                         </th>
+                                       
                                         <th>
-                                            启用状态
-                                        </th>
-                                        <th>
-                                            操作
+                                            <a id="modal-207299" href="#modal-container-207299" role="button" style="font-size: xx-small;" class="btn btn-primary" data-toggle="modal">添加</a><a id="modal-207300" href="#modal-container-207300" role="button" style="font-size: xx-small;margin-left: 5px;" class="btn btn-success" data-toggle="modal">导入</a>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for item in user_data %}
+                                    {% for item in permission_data %}
                                         <tr class="{{ item.style }}" >
                                             <td>
                                                 {{ item.id }}
                                             </td>
                                             <td>
-                                                {{ item.username }}
+                                                {{ item.group_name }}
                                             </td>
                                             <td>
-                                                {{ item.email }}
+                                                {{ item.url }}
                                             </td>
                                             <td>
-                                                {{ item.last_login }}
+                                                {{ item.description }}
                                             </td>
+                                        
                                             <td>
-                                                {{ item.is_active }}
-                                            </td>
-                                            <td>
-                                                <a role="button" class="btn btn-primary" style="font-size: xx-small;"  href="">停用</a><a role="button"  class="btn btn-default" style="margin-left: 10px;font-size: xx-small;" href="">启用</a><a role="button" class="btn btn-success" style="margin-left: 10px;font-size: xx-small;" href="">修改</a><a role="button" class="btn btn-danger" style="margin-left: 10px;font-size: xx-small;" href="">删除</a>
+                                                
+                                                <a id="modal-207301" onclick="update_user('{{ item.id}}','{{ item.email }}')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
+                                                <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/managementUser/delete?id={{ item.id }}')" > 删除</button>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -131,13 +168,13 @@
                                     <ul style="float: right;" class="pagination">
                                         <li class="">
                                             {% if dic1.page_number <= 2 %}
-                                                <a href="/management/user/page?search={{ dic1.username }}&page_number=1">上一页</a>
+                                                <a href="/management/permission/searchPermission/page?url={{ dic1.url }}&page_number=1">上一页</a>
                                             {% else %}
-                                                <a href="/management/user/page?search={{ dic1.username }}&page_number={{ dic1.page_number|add:-1 }}">上一页</a>
+                                                <a href="/management/permission/searchPermission/page?url={{ dic1.url }}&page_number={{ dic1.page_number|add:-1 }}">上一页</a>
                                             {% endif %}
                                         </li>
                                         <li >
-                                             <a style="margin-left: 10px;" href="/management/user/page?search={{ dic1.username }}&page_number={{ dic1.page_number|add:1 }}">下一页</a>
+                                             <a style="margin-left: 10px;" href="/management/permission/searchPermission/page?url={{ dic1.url }}&page_number={{ dic1.page_number|add:1 }}">下一页</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -145,6 +182,92 @@
                         </div>
                     </div>
                 </div>
+                <!-- 修改用户信息模态框 -->
+                <div class="modal fade" id="modal-container-207301" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    修改用户信息(只允许修改邮箱)
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <form role="form" action="/managementUser/update/" method="post" >
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="update_id">ID</label><input type="text" class="form-control" name="update_id" readonly="readonly" id="update_id" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_email">邮箱</label><input type="text" class="form-control" name="update_email" id="update_email" />
+                                    </div>
+                                    <button type="submit" class="btn btn-default btn-primary">提交</button>
+                                </form>
+                            </div>
+                        </div> 
+                    </div>
+                </div> 
+                <!-- 添加用户模态框 -->
+                <div class="modal fade" id="modal-container-207299" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    添加用户
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <form role="form" action="/managementUser/add/" method="post" enctype = "multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="username">用户名</label><input type="text" class="form-control" name="username" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="password">密码</label><input type="password" class="form-control" name="password" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">邮箱</label><input type="email" class="form-control" name="email" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="group_id">用户组</label>
+                                        <select name="group_id" class="form-control">
+                                            <option value="1">管理员</option>
+                                            <option value="2">顾客</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-default btn-primary">提交</button>
+                                </form>
+                            </div>
+                        </div> 
+                    </div>
+                </div> 
+                <!--批量导入用户的模态框-->
+                <div class="modal fade" id="modal-container-207300" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    导入用户
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <form role="form" action="/managementUser/import/" method="post" enctype = "multipart/form-data">
+                                    {% csrf_token %}
+                                    <div style="margin-top: 15px;" class="form-group">
+                                            <label for="user_file">请上传EXCEL文件</label><input role="button"  type="file" name="user_file" />
+                                        <p style="margin-top: 10px;" class="help-block">
+                                            模板下载链接如下:
+                                            <a href="/managementUser/download/">点击下载</a>
+                                        </p>
+                                    </div>
+                                    <button type="submit" class="btn btn-default btn-primary">导入</button>
+                                </form>
+                            </div>
+                        </div> 
+                    </div>
+                </div> 
                 <nav style="height: 20px;" class="navbar navbar-default navbar-fixed-top" role="navigation">
                     <div style="margin-left: 185px;margin-top: 15px;" class="navbar-header">
                         <p> <a style="margin-left: 10px;color: black;" href="/index/">商城首页</a>&nbsp&nbsp&nbsp&nbsp&nbsp欢迎来到水果商店!<a style="margin-left: 15px;color: black;" href="/login/">点击登录!</a> <a style="margin-left: 15px;color: black;" href="/register/">免费注册!</a> <a style="margin-left: 15px;color: black;" href="/management/">管理入口</a> <img src="/static/imgs/index_user.png" width="20px" height="20px" style="margin-left: 540px;" alt=""><a style="margin-left: 10px;color: black;" href="/userInfo/">{{ dic1.current_user }}</a> <a style="margin-left: 40px; color: black;" href="/logout/">退出</a></p>

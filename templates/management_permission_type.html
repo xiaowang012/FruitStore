@@ -168,13 +168,13 @@
                                     <ul style="float: right;" class="pagination">
                                         <li class="">
                                             {% if dic1.page_number <= 2 %}
-                                                <a href="/management/permission/page?page_number=1">上一页</a>
+                                                <a href="/management/permission/searchPermission/type/page?code={{ dic1.code }}&page_number=1">上一页</a>
                                             {% else %}
-                                                <a href="/management/permission/page?page_number={{ dic1.page_number|add:-1 }}">上一页</a>
+                                                <a href="/management/permission/searchPermission/type/page?code={{ dic1.code }}&page_number={{ dic1.page_number|add:-1 }}">上一页</a>
                                             {% endif %}
                                         </li>
                                         <li >
-                                             <a style="margin-left: 10px;" href="/management/permission/page?page_number={{ dic1.page_number|add:1 }}">下一页</a>
+                                             <a style="margin-left: 10px;" href="/management/permission/searchPermission/type/page?code={{ dic1.code }}&page_number={{ dic1.page_number|add:1 }}">下一页</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -207,24 +207,27 @@
                         </div> 
                     </div>
                 </div> 
-                <!-- 添加权限模态框 -->
+                <!-- 添加用户模态框 -->
                 <div class="modal fade" id="modal-container-207299" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                                 <h4 class="modal-title" id="myModalLabel">
-                                    添加权限
+                                    添加用户
                                 </h4>
                             </div>
                             <div class="modal-body">
-                                <form role="form" action="/management/permission/add/" method="post" enctype = "multipart/form-data">
+                                <form role="form" action="/managementUser/add/" method="post" enctype = "multipart/form-data">
                                     {% csrf_token %}
                                     <div class="form-group">
-                                        <label for="url">URL</label><input type="text" class="form-control" name="url" />
+                                        <label for="username">用户名</label><input type="text" class="form-control" name="username" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="description">描述信息</label><input type="text" class="form-control" name="description" />
+                                        <label for="password">密码</label><input type="password" class="form-control" name="password" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="email">邮箱</label><input type="email" class="form-control" name="email" />
                                     </div>
                                     <div class="form-group">
                                         <label for="group_id">用户组</label>
@@ -239,14 +242,14 @@
                         </div> 
                     </div>
                 </div> 
-                <!--批量导入权限的模态框-->
+                <!--批量导入用户的模态框-->
                 <div class="modal fade" id="modal-container-207300" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                                 <h4 class="modal-title" id="myModalLabel">
-                                    导入权限
+                                    导入用户
                                 </h4>
                             </div>
                             <div class="modal-body">
