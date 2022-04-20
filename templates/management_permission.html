@@ -50,10 +50,10 @@
                         <div class="col-md-12 column">
                             <div style="margin-top: 20px;" class="tabbable" id="tabs-577358">
                                 <ul class="nav nav-tabs">
-                                    <li class="active">
+                                    <li >
                                          <a href="/management/" >用户管理</a>
                                     </li>
-                                    <li>
+                                    <li class="active" >
                                          <a href="/management/permission/">权限管理</a>
                                     </li>
                                     <li>
@@ -74,7 +74,7 @@
                                 </ul>
                             </div>
                             <div style="margin-top: 20px;margin-left: -10px;" class="col-md-12 column">
-                                <span style="font-size: medium ;" class="label label-info">用户管理</span>
+                                <span style="font-size: medium ;" class="label label-info">权限管理</span>
                             </div>
                             <div style="margin-top:10px;margin-left: -10px;" class="col-md-12 column">
                                 {%if messages %}
@@ -106,43 +106,38 @@
                                             ID
                                         </th>
                                         <th>
-                                            用户名
+                                            用户组
                                         </th>
                                         <th>
-                                            邮箱
+                                            URL地址
                                         </th>
                                         <th>
-                                            上次登录时间
+                                            描述信息
                                         </th>
+                                       
                                         <th>
-                                            启用状态
-                                        </th>
-                                        <th>
-                                            操作 <a id="modal-207299" href="#modal-container-207299" role="button" style="font-size: xx-small;margin-left: 75px;" class="btn btn-primary" data-toggle="modal">添加</a><a id="modal-207300" href="#modal-container-207300" role="button" style="font-size: xx-small;margin-left: 5px;" class="btn btn-success" data-toggle="modal">导入</a>
+                                            <a id="modal-207299" href="#modal-container-207299" role="button" style="font-size: xx-small;" class="btn btn-primary" data-toggle="modal">添加</a><a id="modal-207300" href="#modal-container-207300" role="button" style="font-size: xx-small;margin-left: 5px;" class="btn btn-success" data-toggle="modal">导入</a>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for item in user_data %}
+                                    {% for item in permission_data %}
                                         <tr class="{{ item.style }}" >
                                             <td>
                                                 {{ item.id }}
                                             </td>
                                             <td>
-                                                {{ item.username }}
+                                                {{ item.group_name }}
                                             </td>
                                             <td>
-                                                {{ item.email }}
+                                                {{ item.url }}
                                             </td>
                                             <td>
-                                                {{ item.last_login }}
+                                                {{ item.description }}
                                             </td>
+                                        
                                             <td>
-                                                {{ item.is_active }}
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-primary" style="font-size: xx-small;" onclick="close_confirm('/managementUser/disable?id={{ item.id }}')">停用</button>
-                                                <button class="btn btn-default" style="font-size: xx-small;" onclick="open_confirm('/managementUser/enable?id={{ item.id }}')">启用</button>
+                                                
                                                 <a id="modal-207301" onclick="update_user('{{ item.id}}','{{ item.email }}')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
                                                 <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/managementUser/delete?id={{ item.id }}')" > 删除</button>
                                             </td>
