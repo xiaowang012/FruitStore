@@ -87,19 +87,15 @@ class ManagementUserAdd(forms.Form):
 class ManagementUserImport(forms.Form):
     user_file = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
 
-# #修改书本信息的表单
-# class UpdateBooksForm(forms.Form):
-#     bookname = forms.CharField(min_length=1,max_length=50,error_messages={"min_length":"bookname长度不能小于1!","max_length":"bookname长度不能大于50!"})
-#     booktype =forms.CharField(min_length=1,max_length=50,error_messages={"min_length":"booktype长度不能小于1!","max_length":"booktype长度不能大于50!"})
-#     book_description = forms.CharField(max_length=200,error_messages={"max_length":"book_description长度不能大于200!"})
-#     issue_year = forms.CharField(min_length=1,max_length=50,error_messages={"min_length":"issue_year长度不能小于1!","max_length":"issue_year长度不能大于50!"})
-#     file_name = forms.CharField(min_length=1,max_length=100,error_messages={"min_length":"file_name长度不能小于1!","max_length":"file_name长度不能大于50!"})
+#后台管理权限管理查询权限(url)
+class ManagementPermissionSearch(forms.Form):
+    url = forms.CharField(min_length=1,max_length=100,error_messages={"required":"URL不能为空!","min_length":"url长度不能小于1!","max_length":"URL长度不能大于100!"})
 
-# #添加permission表单
-# class AddPermissionForm(forms.Form):
-#     group_name = forms.CharField(min_length=1,max_length=50,error_messages={"required":"用户组不能为空!","min_length":"用户组长度不能小于1!","max_length":"用户组长度不能大于50!"})
-#     url = forms.CharField(min_length=1,max_length=50,error_messages={"required":"URL不能为空!","min_length":"URL长度不能小于1!","max_length":"URL长度不能大于50!"})
-#     description = forms.CharField(min_length=1,max_length=50,error_messages={"required":"description不能为空!","min_length":"description长度不能小于1!","max_length":"description长度不能大于50!"})
+#后台管理权限管理添加权限表单
+class ManagementPermissionAdd(forms.Form):
+    group_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"用户组不能为空!","min_length":"用户组长度不能小于1!","max_length":"用户组长度不能大于50!"})
+    url = forms.CharField(min_length=1,max_length=100,error_messages={"required":"URL不能为空!","min_length":"URL长度不能小于1!","max_length":"URL长度不能大于100!"})
+    description = forms.CharField(min_length=1,max_length=100,error_messages={"required":"描述信息不能为空!","min_length":"描述信息长度不能小于1!","max_length":"描述信息长度不能大于100!"})
 
 # #修改permission表单
 # class UpdatePermissionForm(forms.Form):
