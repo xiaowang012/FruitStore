@@ -49,6 +49,10 @@ urlpatterns = [
     path('managementUser/enable',views.user_management_enable_user),
     path('managementUser/delete',views.user_management_delete_user),
     path('managementUser/update/',views.user_management_update_user),
+    path('managementUser/add/',views.user_management_add_user),
+    path('managementUser/import/',views.user_management_import_user),
+    path('managementUser/download/',views.user_management_download_import_user_file),
+    path('management/permission/',views.permission_management),
 
 ]
 
