@@ -53,6 +53,15 @@ urlpatterns = [
     path('managementUser/import/',views.user_management_import_user),
     path('managementUser/download/',views.user_management_download_import_user_file),
     path('management/permission/',views.permission_management),
-
+    path('management/permission/page',views.permission_management_page),
+    path('management/permission/searchPermission/',views.permission_management_search_by_url),
+    path('management/permission/searchPermission/page',views.permission_management_search_by_url_page),
+    path('management/permission/searchPermission/type',views.permission_management_search_by_user_group),
+    path('management/permission/searchPermission/type/page',views.permission_management_search_by_user_group_page),
+    path('management/permission/add/',views.permission_management_add_permission),
+    path('management/permission/import/',views.permission_management_import_permission),
+    path('management/permission/download/',views.permission_management_download_import_permission_file),
+    path('management/permission/update',views.permission_management_update_permission),
+    path('management/permission/delete',views.permission_management_delete_permission),
 ]
 
