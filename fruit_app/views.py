@@ -422,7 +422,7 @@ def search_fruit_info(request):
                 errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
             type = 'alert alert-dismissable alert-danger'
             messages.add_message(request, messages.ERROR, errors)
-            print(request.get_full_path())
+            #print(request.get_full_path())
             return redirect('/getfruitList/')
     
 #首页查询水果(模糊查询)翻页
@@ -1107,7 +1107,210 @@ def permission_management(request):
             j.style = random.choice(['error','info','success','warning']) 
         dic1 = {'current_user':current_user,'page_number':1}
         return render(request,'management_permission.html',{'dic1':dic1,'permission_data':permission_info})
+
+#权限管理翻页
+def permission_management_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        page_number = request.GET.get('page_number')
+        try:
+            page_number = int(page_number)
+        except:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            #根据页码限制返回权限数据
+            search_start_num = (page_number-1)*10
+            search_end_num = page_number*10
+            permission_info = models.RoutePermission.objects.all().order_by('-add_route_permission_time')[search_start_num:search_end_num]
+            for j in permission_info:
+                #给表格加style
+                j.style = random.choice(['error','info','success','warning']) 
+            dic1 = {'current_user':current_user,'page_number':page_number}
+            return render(request,'management_permission.html',{'dic1':dic1,'permission_data':permission_info})
+
+#权限管理按url模糊查询
+def permission_management_search_by_url(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementPermissionSearch (request.POST)
+        if form.is_valid():
+            url = request.POST.get('url')
+            #模糊查询URL
+            if url:
+                search_permissions = models.RoutePermission.objects.filter(url__contains = url).order_by('-add_route_permission_time')[0:10]
+                for i in search_permissions:
+                    #给表格加style
+                    i.style = random.choice(['error','info','success','warning'])
+                #数据为空给个消息提示
+                if len(search_permissions) == 0:
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的权限条目!')  
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':1,'url':url}
+                return render(request,'management_permission_search.html',{'form':form,'dic1':dic1,'permission_data':search_permissions}) 
+            else:
+                messages.add_message(request,messages.ERROR,' 未收到url数据!')     
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            type = 'alert alert-dismissable alert-danger'
+            messages.add_message(request, messages.ERROR, errors)
+        return redirect('/management/permission/')
+
+#权限管理按url模糊查询翻页
+def permission_management_search_by_url_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        url = request.GET.get('url')
+        page_number = request.GET.get('page_number')
+        if url:
+            try:
+                page_number = int(page_number)
+            except:
+                messages.add_message(request,messages.ERROR,' 参数错误!')
+                return redirect('/management/permission/')
+            else:
+                #根据页码限制返回权限数据
+                search_start_num = (page_number-1)*10
+                search_end_num = page_number*10
+                permission_info = models.RoutePermission.objects.filter(url__contains = url).order_by('-add_route_permission_time')[search_start_num:search_end_num]
+                for j in permission_info:
+                    #给表格加style
+                    j.style = random.choice(['error','info','success','warning']) 
+                dic1 = {'current_user':current_user,'page_number':page_number,'url':url}
+                return render(request,'management_permission_search.html',{'dic1':dic1,'permission_data':permission_info})
+        else:
+            messages.add_message(request,messages.ERROR,' url参数错误!')
+            return redirect('/management/permission/')
+
+#权限管理按用户组查询
+def permission_management_search_by_user_group(request):
+    current_user = request.user
+    if request.method == 'GET':
+        code = request.GET.get('code')
+        try:
+            code = int(code)
+        except:
+            messages.add_message(request,messages.ERROR,' code参数错误!')
+            return redirect('/management/permission/')
+        else:
+            #根据code查询数据
+            group_name = None
+            if code == 1:
+                group_name = 'admin'
+            elif code == 2:
+                group_name = 'customer'
+            if group_name:
+                permission_info = models.RoutePermission.objects.filter(group_name = group_name).order_by('-add_route_permission_time').all()[0:10]
+                for i in permission_info:
+                    #给表格加style
+                    i.style = random.choice(['error','info','success','warning']) 
+                dic1 = {'current_user':current_user,'page_number':1,'code':code}
+                return render(request,'management_permission_type.html',{'dic1':dic1,'permission_data':permission_info})
+            else:
+                messages.add_message(request,messages.ERROR,' group_name参数错误!')
+                return redirect('/management/permission/')
+
+#权限管理按用户组查询翻页
+def permission_management_search_by_user_group_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        code = request.GET.get('code')
+        page_number = request.GET.get('page_number')
+        try:
+            page_number = int(page_number)
+            code = int(code)
+        except:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+            return redirect('/management/permission/')
+        else:
+            #根据页码限制返回权限数据
+            search_start_num = (page_number-1)*10
+            search_end_num = page_number*10
+            group_name = None
+            if code == 1:
+                group_name = 'admin'
+            elif code == 2:
+                group_name = 'customer'
+            if group_name:
+                permission_info = models.RoutePermission.objects.filter(group_name = group_name).order_by('-add_route_permission_time')[search_start_num:search_end_num]
+                for j in permission_info:
+                    #给表格加style
+                    j.style = random.choice(['error','info','success','warning']) 
+                dic1 = {'current_user':current_user,'page_number':page_number,'code':code}
+                return render(request,'management_permission_type.html',{'dic1':dic1,'permission_data':permission_info})
+            else:
+                messages.add_message(request,messages.ERROR,' group_name参数错误!')
+                return redirect('/management/permission/')
     
+#权限管理添加权限数据
+def permission_management_add_permission(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementPermissionAdd(request.POST)
+        if form.is_valid():
+            url = request.POST.get('url')
+            description = request.POST.get('description')
+            group_id = request.POST.get('group_id')
+            if url and description:
+                try:
+                    group_id = int(group_id)
+                except:
+                    messages.add_message(request,messages.ERROR,' group_id参数错误!')
+                else:
+                    #根据group_id 判断是哪个角色
+                    group_name = None
+                    if group_id == 1:
+                        group_name = 'admin'
+                    elif group_id == 2:
+                        group_name = 'customer'
+                    #add data
+                    test1 = models.RoutePermission(id = None,group_name = group_name,url = url,description = description)
+                    test1.save()
+                    messages.add_message(request,messages.SUCCESS,' 添加权限: '+ str((group_name,url,description)) + ' 成功!' )
+            else:
+                messages.add_message(request,messages.ERROR,' url,description参数错误!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+    return redirect('/management/permission/')
+
+#权限管理导入权限数据
+def permission_management_import_permission(request):
+    pass
+
+#权限管理导入权限数据下载模板
+def permission_management_download_import_permission_file(request):
+    if request.method == 'GET':
+        permission_template_file = os.getcwd() + os.path.join(os.sep,'media','template_import_permission.zip')
+        if os.path.isfile(permission_template_file) == True:
+            try:
+                f = open(permission_template_file,'rb')
+                response = FileResponse(f)
+                response['Content-Type'] = 'application/octet-stream'
+                response['Content-Disposition'] = 'attachment;filename=' + 'template_import_permission.zip'
+                return response
+            except:
+                messages.add_message(request,messages.ERROR,' 下载失败!')
+                return redirect('/management/permission/')
+        else:
+            messages.add_message(request,messages.ERROR,' 模板文件不存在!')
+            return redirect('/management/permission/')
+    
+
+#权限管理修改权限数据
+def permission_management_update_permission(request):
+    pass
+
+#权限管理删除权限数据
+def permission_management_delete_permission(request):
+    pass
+
+
 
 #订单管理
 def order_management(request):
