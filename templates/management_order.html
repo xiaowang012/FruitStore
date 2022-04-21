@@ -53,16 +53,16 @@
                             <div style="margin-top: 20px;" class="tabbable" id="tabs-577358">
                                 <ul class="nav nav-tabs">
                                     <li >
-                                        <a href="/management/" >用户管理</a>
+                                         <a href="/management/" >用户管理</a>
+                                    </li>
+                                    <li  >
+                                         <a href="/management/permission/">权限管理</a>
+                                    </li>
+                                    <li  >
+                                        <a href="/management/goods/" >商品管理</a>
                                     </li>
                                     <li class="active" >
-                                        <a href="/management/permission/">权限管理</a>
-                                    </li>
-                                    <li  >
-                                       <a href="/management/goods/" >商品管理</a>
-                                    </li>
-                                    <li  >
-                                       <a href="/management/order/" >订单管理</a>
+                                        <a href="/management/order/" >订单管理</a>
                                     </li>
                                     <li>
                                         <a href="/test5/" >账目管理</a>
@@ -76,7 +76,7 @@
                                 </ul>
                             </div>
                             <div style="margin-top: 20px;margin-left: -10px;" class="col-md-12 column">
-                                <span style="font-size: medium ;" class="label label-info">权限管理</span>
+                                <span style="font-size: medium ;" class="label label-info">订单管理</span>
                             </div>
                             <div style="margin-top:10px;margin-left: -10px;" class="col-md-12 column">
                                 {%if messages %}
@@ -105,11 +105,11 @@
                                                 </ul>
                                             </li>
                                         </ul>
-                                        <form class="navbar-form navbar-left" role="search" action="/management/permission/searchPermission/" method="post">
+                                        <form class="navbar-form navbar-left" role="search" action="/management/order/search/" method="post">
                                             {% csrf_token %}
                                             <div class="form-group">
-                                                <input placeholder="输入URL搜索" type="text" name="url" class="form-control" />
-                                            </div> <button type="submit" style="margin-left: 10px;" class="btn btn-primary">查询</button><a role="button" class="btn btn-default" style="margin-left: 10px;" href="/management/permission/">重置</a>
+                                                <input placeholder="输入订单号搜索" type="text" name="order_number" class="form-control" />
+                                            </div> <button type="submit" style="margin-left: 10px;" class="btn btn-primary">查询</button><a role="button" class="btn btn-default" style="margin-left: 10px;" href="/management/order/">重置</a>
                                         </form>
                                         
                                     </div>
@@ -122,43 +122,49 @@
                                             ID
                                         </th>
                                         <th>
-                                            用户组
+                                            购买用户
                                         </th>
                                         <th>
-                                            URL地址
+                                            订单号码
                                         </th>
                                         <th>
-                                            描述信息
+                                            付款金额
                                         </th>
-                                       
+                                        <th>
+                                            订单状态
+                                        </th>
+                                        <th>
+                                            支付状态
+                                        </th>
                                         <th>
                                             <a id="modal-207299" href="#modal-container-207299" role="button" style="font-size: xx-small;" class="btn btn-primary" data-toggle="modal">添加</a><a id="modal-207300" href="#modal-container-207300" role="button" style="font-size: xx-small;margin-left: 5px;" class="btn btn-success" data-toggle="modal">导入</a>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for item in permission_data %}
+                                    {% for item in order_data %}
                                         <tr class="{{ item.style }}" >
                                             <td>
                                                 {{ item.id }}
                                             </td>
                                             <td>
-                                                {{ item.group_name }}
+                                                {{ item.customer }}
                                             </td>
                                             <td>
-                                                {{ item.url }}
+                                                {{ item.order_number }}
                                             </td>
                                             <td>
-                                                {{ item.description }}
+                                                {{ item.money }}
                                             </td>
-                                        
                                             <td>
-                                                {% if item.group_name == 'admin'%}
-                                                    <a id="modal-207301" onclick="update_permission('{{ item.id}}','{{ item.url }}','{{ item.description }}','1')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
-                                                {% endif %}
-                                                {% if item.group_name == 'customer'%}
-                                                    <a id="modal-207301" onclick="update_permission('{{ item.id}}','{{ item.url }}','{{ item.description }}','2')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
-                                                {% endif %}
+                                                {{ item.order_status }}
+                                            </td>
+                                            <td>
+                                                {{ item.pay_status }}
+                                            </td>
+                                            <td>
+                                                
+                                                <a id="modal-207301" onclick="update_permission('{{ item.id}}')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
                                                 <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/management/permission/delete?id={{ item.id }}')" > 删除</button>
                                             </td>
                                         </tr>
@@ -174,13 +180,13 @@
                                     <ul style="float: right;" class="pagination">
                                         <li class="">
                                             {% if dic1.page_number <= 2 %}
-                                                <a href="/management/permission/page?page_number=1">上一页</a>
+                                                <a href="/management/order/page?page_number=1">上一页</a>
                                             {% else %}
-                                                <a href="/management/permission/page?page_number={{ dic1.page_number|add:-1 }}">上一页</a>
+                                                <a href="/management/order/page?page_number={{ dic1.page_number|add:-1 }}">上一页</a>
                                             {% endif %}
                                         </li>
                                         <li >
-                                             <a style="margin-left: 10px;" href="/management/permission/page?page_number={{ dic1.page_number|add:1 }}">下一页</a>
+                                             <a style="margin-left: 10px;" href="/management/order/page?page_number={{ dic1.page_number|add:1 }}">下一页</a>
                                         </li>
                                     </ul>
                                 </div>
