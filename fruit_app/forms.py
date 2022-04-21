@@ -108,3 +108,6 @@ class ManagementPermissionUpdate(forms.Form):
     update_url = forms.CharField(min_length=1,max_length=100,error_messages={"required":"URL不能为空!","min_length":"URL长度不能小于1!","max_length":"URL长度不能大于100!"})
     update_description = forms.CharField(min_length=1,max_length=100,error_messages={"required":"描述信息不能为空!","min_length":"描述信息长度不能小于1!","max_length":"描述信息长度不能大于100!"})
 
+#后台管理订单管理查询订单(订单号)
+class ManagementOrderSearch(forms.Form):
+    order_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单号不能为空!","min_length":"订单号长度不能小于1!","max_length":"订单号长度不能大于100!"})
