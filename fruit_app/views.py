@@ -1431,7 +1431,171 @@ def permission_management_delete_permission(request):
 
 #订单管理
 def order_management(request):
+    current_user = request.user
+    if request.method == 'GET':
+        order_info = models.FruitOrder.objects.all().order_by('-add_order_time')[0:10]
+        #用户名缓存 {customer_id:name}
+        username_dic = {}
+        for j in order_info:
+            #根据customer id 查找用户名
+            customer_id = j.customer
+            if customer_id in username_dic:
+                j.customer = username_dic[customer_id]
+            else:
+                user_info = User.objects.filter(id = customer_id).first()
+                if user_info:
+                    j.customer = user_info.username
+                else:
+                    messages.add_message(request,messages.ERROR,' 用户不存在!')
+            #给表格加style
+            j.style = random.choice(['error','info','success','warning']) 
+        dic1 = {'current_user':current_user,'page_number':1}
+        return render(request,'management_order.html',{'dic1':dic1,'order_data':order_info})
+
+#订单管理翻页
+def order_management_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        page_number = request.GET.get('page_number')
+        try:
+            page_number = int(page_number)
+        except:
+            messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            #根据页码限制返回权限数据
+            search_start_num = (page_number-1)*10
+            search_end_num = page_number*10
+            order_info = models.FruitOrder.objects.all().order_by('-add_order_time')[search_start_num:search_end_num]
+            #用户名缓存 {customer_id:name}
+            username_dic = {}
+            for j in order_info:
+                customer_id = j.customer
+                if customer_id in username_dic:
+                    j.customer = username_dic[customer_id]
+                else:
+                    user_info = User.objects.filter(id = customer_id).first()
+                    if user_info:
+                        j.customer = user_info.username
+                    else:
+                        messages.add_message(request,messages.ERROR,' 用户不存在!')
+                #给表格加style
+                j.style = random.choice(['error','info','success','warning']) 
+            dic1 = {'current_user':current_user,'page_number':page_number}
+            return render(request,'management_order.html',{'dic1':dic1,'order_data':order_info})
+
+#订单管理按订单号模糊查询
+def order_management_search_order(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementOrderSearch (request.POST)
+        if form.is_valid():
+            order_number = request.POST.get('order_number')
+            #模糊查询订单号
+            if order_number:
+                search_orders = models.FruitOrder.objects.filter(order_number__contains = order_number).order_by('-add_order_time')[0:10]
+                #用户名缓存 {customer_id:name}
+                username_dic = {}
+                for j in search_orders:
+                    #根据customer id 查找用户名
+                    customer_id = j.customer
+                    if customer_id in username_dic:
+                        j.customer = username_dic[customer_id]
+                    else:
+                        user_info = User.objects.filter(id = customer_id).first()
+                        if user_info:
+                            j.customer = user_info.username
+                        else:
+                            messages.add_message(request,messages.ERROR,' 用户不存在!')
+                    #给表格加随机style
+                    j.style = random.choice(['error','info','success','warning'])
+                #数据为空给个消息提示
+                if len(search_orders) == 0:
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的权限条目!')  
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':1,'order_number':order_number}
+                return render(request,'management_order_search.html',{'form':form,'dic1':dic1,'order_data':search_orders}) 
+            else:
+                messages.add_message(request,messages.ERROR,' 未收到订单号数据!') 
+                return redirect('/management/order/')    
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            type = 'alert alert-dismissable alert-danger'
+            messages.add_message(request, messages.ERROR, errors)
+            return redirect('/management/order/')
+    
+#订单管理按订单号模糊查询翻页
+def order_management_search_order_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        order_number = request.GET.get('order_number')
+        page_number = request.GET.get('page_number')
+        if order_number:
+            try:
+                page_number = int(page_number)
+            except:
+                messages.add_message(request,messages.ERROR,' page_number参数错误!')
+                return redirect('/management/order/')
+            else:
+                #根据页码限制返回权限数据
+                search_start_num = (page_number-1)*10
+                search_end_num = page_number*10
+                order_info = models.FruitOrder.objects.filter(order_number__contains = order_number).order_by('-add_order_time')[search_start_num:search_end_num]
+                #用户名缓存 {customer_id:name}
+                username_dic = {}
+                for j in order_info:
+                    customer_id = j.customer
+                    if customer_id in username_dic:
+                        j.customer = username_dic[customer_id]
+                    else:
+                        user_info = User.objects.filter(id = customer_id).first()
+                        if user_info:
+                            j.customer = user_info.username
+                        else:
+                            messages.add_message(request,messages.ERROR,' 用户不存在!')
+                    #给表格加style
+                    j.style = random.choice(['error','info','success','warning']) 
+                dic1 = {'current_user':current_user,'page_number':page_number,'order_number':order_number}
+                return render(request,'management_order_search.html',{'dic1':dic1,'order_data':order_info})
+        else:
+            messages.add_message(request,messages.ERROR,' order_number参数错误!')
+            return redirect('/management/order/')
+
+#订单管理按照购买用户查询
+def order_management_search_order_by_customer(request):
     pass
+
+#订单管理按照购买用户查询翻页
+def order_management_search_order_by_customer_page(request):
+    pass
+
+#订单管理新增订单
+def order_management_add_order(request):
+    pass
+
+#订单管理修改订单
+def order_management_update_order(request):
+    pass
+
+#订单管理导入订单
+def order_management_import_order(request):
+    pass
+
+#订单管理删除订单
+def order_management_delete_order(request):
+    pass
+
+#订单管理删除订单(逻辑删除)
+def order_management_delete1_order(request):
+    pass
+
+#订单管理发货操作
+def order_management_send_order_goods(request):
+    pass
+
+
 
 #商品管理
 def goods_management(request):
