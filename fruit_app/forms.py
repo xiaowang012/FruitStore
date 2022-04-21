@@ -97,12 +97,14 @@ class ManagementPermissionAdd(forms.Form):
     url = forms.CharField(min_length=1,max_length=100,error_messages={"required":"URL不能为空!","min_length":"URL长度不能小于1!","max_length":"URL长度不能大于100!"})
     description = forms.CharField(min_length=1,max_length=100,error_messages={"required":"描述信息不能为空!","min_length":"描述信息长度不能小于1!","max_length":"描述信息长度不能大于100!"})
 
-# #修改permission表单
-# class UpdatePermissionForm(forms.Form):
-#     group_name1 = forms.CharField(min_length=1,max_length=50,error_messages={"min_length":"用户组长度不能小于1!","max_length":"用户组长度不能大于50!"})
-#     url1 = forms.CharField(min_length=1,max_length=50,error_messages={"min_length":"URL长度不能小于1!","max_length":"URL长度不能大于50!"})
-#     description1 = forms.CharField( min_length=1,max_length=50,error_messages={"min_length":"description长度不能小于1!","max_length":"description长度不能大于50!"})
+#后台管理权限管理批量导入权限表单
+class ManagementPermissionImport(forms.Form):
+    permission_file = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
 
-# #批量导入permission
-# class UploadPermissionForm(forms.Form):
-#     permission_file = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
+#后台管理权限管理修改权限表单
+class ManagementPermissionUpdate(forms.Form):
+    update_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"id不能为空!","min_length":"id长度不能小于1!","max_length":"id长度不能大于50!"})
+    update_group_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"用户组不能为空!","min_length":"用户组长度不能小于1!","max_length":"用户组长度不能大于50!"})
+    update_url = forms.CharField(min_length=1,max_length=100,error_messages={"required":"URL不能为空!","min_length":"URL长度不能小于1!","max_length":"URL长度不能大于100!"})
+    update_description = forms.CharField(min_length=1,max_length=100,error_messages={"required":"描述信息不能为空!","min_length":"描述信息长度不能小于1!","max_length":"描述信息长度不能大于100!"})
+
