@@ -944,7 +944,7 @@ def user_management_update_user(request):
         if form.is_valid():
             update_id = request.POST.get('update_id')
             update_email = request.POST.get('update_email')
-            print(update_id,update_email)
+            #print(update_id,update_email)
             userinfo = User.objects.filter(id = update_id).first()
             if userinfo:
                 if userinfo.email != update_email:
@@ -1281,7 +1281,72 @@ def permission_management_add_permission(request):
 
 #权限管理导入权限数据
 def permission_management_import_permission(request):
-    pass
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementPermissionImport(request.POST,request.FILES)
+        if form.is_valid():
+            permission_file = request.FILES.get('permission_file')
+            if permission_file:
+                file_extension = os.path.splitext(permission_file.name)[-1]
+                if '.xlsx' == file_extension or '.xls' == file_extension:
+                    file_name =  str(time.time()) + file_extension
+                    permission_file_dir = os.getcwd() + os.path.join(os.sep,'temp', file_name)
+                    #保存文件到临时文件目录temp
+                    with open(permission_file_dir,'wb') as f:
+                        for chunk in permission_file.chunks():
+                            f.write(chunk)
+                    #读取excel写入数据库
+                    work_book = xlrd.open_workbook (permission_file_dir)
+                    ws = work_book.sheet_by_name('Sheet1')
+                    #读取第一行数据
+                    if ws.nrows != 0:
+                        line_1_values = ws.row_values(0)
+                        print(line_1_values)
+                        if line_1_values == ['URL','描述信息','用户组ID']:
+                            message_list = []
+                            for i in range(1,ws.nrows):
+                                try:
+                                    values_list = ws.row_values(i)
+                                    url = values_list[0]
+                                    description = values_list[1]
+                                    group_id = values_list[2]
+                                    #根据不同的group_id 分配不同的用户组
+                                    group_name = None
+                                    if int(group_id) == 1:
+                                        group_name = 'admin'
+                                    elif int(group_id) == 2: 
+                                        group_name = 'customer'
+                                    #加入数据库
+                                    test1 = models.RoutePermission(id = None,group_name = group_name,url = url,description = description)
+                                    test1.save()
+                                    #加入消息列表
+                                    msg = ' 导入权限 ' +str((group_name,url,description)) +' 成功!'
+                                    message_list.append(msg)
+                                except:
+                                    #加入消息列表
+                                    msg = ' 导入权限 ' +str((group_name,url,description)) +' 失败!'
+                                    message_list.append(msg)
+                            #从message_list 取提示
+                            msgs = ''
+                            for msg in message_list:
+                                msgs += msg
+                            messages.add_message(request,messages.ERROR,msgs)
+                        else:
+                            messages.add_message(request,messages.ERROR,' 数据格式错误!')
+                    else:
+                        messages.add_message(request,messages.ERROR,' 空数据!')
+                else:
+                    messages.add_message(request,messages.ERROR,' 请上传excel文件!')
+
+            else:
+                messages.add_message(request,messages.ERROR,' 文件不存在!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)
+        return redirect('/management/permission/')
 
 #权限管理导入权限数据下载模板
 def permission_management_download_import_permission_file(request):
@@ -1300,17 +1365,69 @@ def permission_management_download_import_permission_file(request):
         else:
             messages.add_message(request,messages.ERROR,' 模板文件不存在!')
             return redirect('/management/permission/')
-    
 
 #权限管理修改权限数据
 def permission_management_update_permission(request):
-    pass
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementPermissionUpdate(request.POST)
+        if form.is_valid():
+            update_id = request.POST.get('update_id')
+            update_url = request.POST.get('update_url')
+            update_description = request.POST.get('update_description')
+            update_group_id = request.POST.get('update_group_id')
+            permission_info = models.RoutePermission.objects.filter(id = update_id).first()
+            if permission_info:
+                message1 = ''
+                message2 = ''
+                message3 = ''
+                if permission_info.url != update_url:
+                    permission_info.url = update_url
+                    permission_info.save()
+                    message1 = 'URL'
+                if permission_info.description != update_description:
+                    permission_info.description = update_description
+                    permission_info.save()
+                    message2 = '描述信息'
+                #通过group_id 确定group_name
+                group_name = None
+                if update_group_id == '1':
+                    group_name = 'admin'
+                elif update_group_id == '2':
+                    group_name = 'customer'
+                if permission_info.group_name != group_name:
+                    permission_info.group_name = group_name
+                    permission_info.save()
+                    message3 = '用户组ID'
+                messages.add_message(request,messages.SUCCESS,'修改字段: ' + message1 +' '+ message2 +' '+ message3 +' 成功!')
+            else:
+                messages.add_message(request,messages.ERROR,' 权限不存在!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)
+        return redirect('/management/permission/')
 
 #权限管理删除权限数据
 def permission_management_delete_permission(request):
-    pass
-
-
+    current_user = request.user
+    if request.method == 'GET':
+        delete_permission_id = request.GET.get('id')
+        try:
+            delete_permission_id = int(delete_permission_id)
+        except:
+            messages.add_message(request,messages.ERROR,' delete_permission_id参数错误!')
+        else:
+            permission_info = models.RoutePermission.objects.filter(id = delete_permission_id).first()
+            if permission_info:
+                permission_info.delete()
+                permission_info.save()
+                messages.add_message(request,messages.SUCCESS,' 删除成功!')
+            else:
+                messages.add_message(request,messages.ERROR,' 删除失败!')
+        return redirect('/management/permission/')
 
 #订单管理
 def order_management(request):
