@@ -28,9 +28,11 @@
           if(r){window.location.href=url
           }
         }
-        function update_user(id,email) {
+        function update_permission(id,url,description,group_id) {
         $( '#update_id').val(id);
-        $( '#update_email').val(email);
+        $( '#update_url').val(url);
+        $( '#update_description').val(description);
+        $( '#update_group_id').val(group_id);
         }
        
     </script>
@@ -151,9 +153,13 @@
                                             </td>
                                         
                                             <td>
-                                                
-                                                <a id="modal-207301" onclick="update_user('{{ item.id}}','{{ item.email }}')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
-                                                <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/managementUser/delete?id={{ item.id }}')" > 删除</button>
+                                                {% if item.group_name == 'admin'%}
+                                                    <a id="modal-207301" onclick="update_permission('{{ item.id}}','{{ item.url }}','{{ item.description }}','1')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
+                                                {% endif %}
+                                                {% if item.group_name == 'customer'%}
+                                                    <a id="modal-207301" onclick="update_permission('{{ item.id}}','{{ item.url }}','{{ item.description }}','2')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
+                                                {% endif %}
+                                                <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/management/permission/delete?id={{ item.id }}')" > 删除</button>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -189,17 +195,27 @@
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                                 <h4 class="modal-title" id="myModalLabel">
-                                    修改用户信息(只允许修改邮箱)
+                                    修改权限信息
                                 </h4>
                             </div>
                             <div class="modal-body">
-                                <form role="form" action="/managementUser/update/" method="post" >
+                                <form role="form" action="/management/permission/update/" method="post" >
                                     {% csrf_token %}
                                     <div class="form-group">
                                         <label for="update_id">ID</label><input type="text" class="form-control" name="update_id" readonly="readonly" id="update_id" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="update_email">邮箱</label><input type="text" class="form-control" name="update_email" id="update_email" />
+                                        <label for="update_url">URL</label><input type="text" class="form-control" name="update_url" id="update_url" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_description">描述信息</label><input type="text" class="form-control" name="update_description" id="update_description" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_group_id">用户组</label>
+                                        <select name="update_group_id" id="update_group_id" class="form-control">
+                                            <option value="1">管理员</option>
+                                            <option value="2">顾客</option>
+                                        </select>
                                     </div>
                                     <button type="submit" class="btn btn-default btn-primary">提交</button>
                                 </form>
@@ -250,13 +266,13 @@
                                 </h4>
                             </div>
                             <div class="modal-body">
-                                <form role="form" action="/managementUser/import/" method="post" enctype = "multipart/form-data">
+                                <form role="form" action="/management/permission/import/" method="post" enctype = "multipart/form-data">
                                     {% csrf_token %}
                                     <div style="margin-top: 15px;" class="form-group">
-                                            <label for="user_file">请上传EXCEL文件</label><input role="button"  type="file" name="user_file" />
+                                            <label for="permission_file">请上传EXCEL文件</label><input role="button"  type="file" name="permission_file" />
                                         <p style="margin-top: 10px;" class="help-block">
                                             模板下载链接如下:
-                                            <a href="/managementUser/download/">点击下载</a>
+                                            <a href="/management/permission/download/">点击下载</a>
                                         </p>
                                     </div>
                                     <button type="submit" class="btn btn-default btn-primary">导入</button>
