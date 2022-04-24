@@ -111,3 +111,24 @@ class ManagementPermissionUpdate(forms.Form):
 #后台管理订单管理查询订单(订单号)
 class ManagementOrderSearch(forms.Form):
     order_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单号不能为空!","min_length":"订单号长度不能小于1!","max_length":"订单号长度不能大于100!"})
+
+#后台管理订单管理添加订单
+class ManagementOrderAdd(forms.Form):
+    customer = forms.CharField(min_length=1,max_length=50,error_messages={"required":"购买用户不能为空!","min_length":"购买用户长度不能小于1!","max_length":"购买用户长度不能大于50!"})
+    order_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单号码不能为空!","min_length":"订单号码长度不能小于1!","max_length":"订单号码长度不能大于100!"})
+    money = forms.DecimalField(max_digits=8,decimal_places=2,error_messages={"required":"金额不允许为空!","max_digits":"金额长度超出8位!","decimal_places":"小数点位数超出2位!"})
+    order_status = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单状态不能为空!","min_length":"订单状态长度不能小于1!","max_length":"订单状态长度不能大于100!"})
+    pay_status = forms.CharField(min_length=1,max_length=100,error_messages={"required":"支付状态不能为空!","min_length":"支付状态长度不能小于1!","max_length":"支付状态长度不能大于100!"})
+
+#后台管理订单管理修改订单
+class ManagementOrderUpdate(forms.Form):
+    update_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"id不能为空!","min_length":"id长度不能小于1!","max_length":"id长度不能大于50!"})
+    update_customer = forms.CharField(min_length=1,max_length=50,error_messages={"required":"购买用户不能为空!","min_length":"购买用户长度不能小于1!","max_length":"购买用户长度不能大于50!"})
+    update_order_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单号码不能为空!","min_length":"订单号码长度不能小于1!","max_length":"订单号码长度不能大于100!"})
+    update_money = forms.DecimalField(max_digits=8,decimal_places=2,error_messages={"required":"金额不允许为空!","max_digits":"金额长度超出8位!","decimal_places":"小数点位数超出2位!"})
+    update_order_status = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单状态不能为空!","min_length":"订单状态长度不能小于1!","max_length":"订单状态长度不能大于100!"})
+    update_pay_status = forms.CharField(min_length=1,max_length=100,error_messages={"required":"支付状态不能为空!","min_length":"支付状态长度不能小于1!","max_length":"支付状态长度不能大于100!"})
+
+#后台管理订单管理批量导入订单表单
+class ManagementOrderImport(forms.Form):
+    order_file = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
