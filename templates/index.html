@@ -9,6 +9,14 @@
 	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
+    <script type="text/javascript">
+        function delete_confirm(url)
+        {
+        var r=confirm("您确定要删除吗?")
+          if(r){window.location.href=url
+          }
+        }
+    </script>
     <div class="container">
         <div class="row clearfix">
             <div class="col-md-12 column">
@@ -42,7 +50,7 @@
                 </div>
                 <!-- 消息提醒 -->
                 {%if messages %}
-                    <div style="margin-top: 10px;" class= "alert alert-dismissable alert-danger">
+                    <div style="margin-top: 10px;" class= "alert alert-dismissable alert-success">
                         <button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
                         {% for msg in messages %}
                             <strong>{{ msg }}&nbsp&nbsp</strong>
@@ -246,7 +254,8 @@
                                             {{ item.commenting_user }}
                                         </td>
                                         <td>
-                                            {{ item.commenting_content }} <a role="button" style="float: right;font-size: xx-small;" class="btn btn-success" href="/delete/message?id={{ item.id }}">删除</a>
+                                            {{ item.commenting_content }} 
+                                            <button style="font-size: xx-small;float: right;" class="btn btn-success" onclick="delete_confirm('/delete/message?id={{ item.id }}')" > 删除</button>
                                         </td>
                                     </tr>
                                 {% endfor %}   

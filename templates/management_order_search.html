@@ -12,7 +12,19 @@
     <script type="text/javascript">
         function delete_confirm(url)
         {
-        var r=confirm("您确定要删除吗?")
+        var r=confirm("您确定要删除吗(逻辑删除)?")
+          if(r){window.location.href=url
+          }
+        }
+        function delete1_confirm(url)
+        {
+        var r=confirm(" 此操作数据无法恢复! 您确定要删除吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function send_confirm(url)
+        {
+        var r=confirm("您确定要发货吗?")
           if(r){window.location.href=url
           }
         }
@@ -28,11 +40,13 @@
           if(r){window.location.href=url
           }
         }
-        function update_permission(id,url,description,group_id) {
+        function update_order(id,customer,order_number,money,order_status,pay_status) {
         $( '#update_id').val(id);
-        $( '#update_url').val(url);
-        $( '#update_description').val(description);
-        $( '#update_group_id').val(group_id);
+        $( '#update_customer').val(customer);
+        $( '#update_order_number').val(order_number);
+        $( '#update_money').val(money);
+        $( '#update_order_status').val(order_status);
+        $( '#update_pay_status').val(pay_status);
         }
        
     </script>
@@ -53,16 +67,16 @@
                             <div style="margin-top: 20px;" class="tabbable" id="tabs-577358">
                                 <ul class="nav nav-tabs">
                                     <li >
-                                        <a href="/management/" >用户管理</a>
+                                         <a href="/management/" >用户管理</a>
                                     </li>
                                     <li  >
-                                        <a href="/management/permission/">权限管理</a>
+                                         <a href="/management/permission/">权限管理</a>
                                     </li>
                                     <li  >
-                                       <a href="/management/goods/" >商品管理</a>
+                                        <a href="/management/goods/" >商品管理</a>
                                     </li>
                                     <li class="active" >
-                                       <a href="/management/order/" >订单管理</a>
+                                        <a href="/management/order/" >订单管理</a>
                                     </li>
                                     <li>
                                         <a href="/test5/" >账目管理</a>
@@ -92,19 +106,7 @@
                             <div class="col-md-12 column">
                                 <nav style="margin-left: -10px;" class="navbar navbar-default" role="navigation">
                                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                                        <ul class="nav navbar-nav">
-                                            <li class="dropdown">
-                                                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">选择用户组<strong class="caret"></strong></a>
-                                                <ul  class="dropdown-menu">
-                                                    <li>
-                                                         <a href="/management/permission/searchPermission/type?code=1">admin</a>
-                                                    </li>
-                                                    <li>
-                                                         <a href="/management/permission/searchPermission/type?code=2">customer</a>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
+                                        
                                         <form class="navbar-form navbar-left" role="search" action="/management/order/search/" method="post">
                                             {% csrf_token %}
                                             <div class="form-group">
@@ -129,6 +131,9 @@
                                         </th>
                                         <th>
                                             付款金额
+                                        </th>
+                                        <th>
+                                            收货地址
                                         </th>
                                         <th>
                                             订单状态
@@ -157,15 +162,37 @@
                                                 {{ item.money }}
                                             </td>
                                             <td>
-                                                {{ item.order_status }}
+                                                <textarea style="background: rgba(255,255,255,0.1);" cols="30" rows="3">
+                                                    {{ item.address }}
+                                                </textarea>
                                             </td>
+                                            
+                                            {% if item.order_status == 1 %}
+                                                <td>
+                                                    <dd>已完成</dd> 
+                                                </td>
+                                            {% endif %}
+                                            {% if item.order_status == 0 %}
+                                                <td>
+                                                    <dd>未完成</dd> 
+                                                </td>
+                                            {% endif %}
+                                            {% if item.pay_status == 1 %}
+                                                <td>
+                                                    <dd>已支付</dd> 
+                                                </td>
+                                            {% endif %}
+                                            {% if item.pay_status == 0 %}
+                                                <td>
+                                                    <dd>未支付</dd> 
+                                                </td>
+                                            {% endif %}
+                                
                                             <td>
-                                                {{ item.pay_status }}
-                                            </td>
-                                            <td>
-                                                
-                                                <a id="modal-207301" onclick="update_permission('{{ item.id}}')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
-                                                <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/management/permission/delete?id={{ item.id }}')" > 删除</button>
+                                                <button style="font-size: xx-small;" class="btn btn-default" onclick="send_confirm('/management/order/send_order_goods?id={{ item.id }}')" > 发货</button>
+                                                <a id="modal-207301" onclick="update_order('{{ item.id }}','{{ item.customer }}','{{ item.order_number }}','{{ item.money }}','{{ item.order_status }}','{{ item.pay_status }}')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
+                                                <button style="font-size: xx-small;" class="btn btn-primary" onclick="delete_confirm('/management/order/logical_deletion?id={{ item.id }}')" > 删除</button>
+                                                <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete1_confirm('/management/order/delete?id={{ item.id }}')" > 删除</button>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -194,33 +221,43 @@
                         </div>
                     </div>
                 </div>
-                <!-- 修改用户信息模态框 -->
+                <!-- 修改订单信息模态框 -->
                 <div class="modal fade" id="modal-container-207301" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                                 <h4 class="modal-title" id="myModalLabel">
-                                    修改权限信息
+                                    修改订单信息
                                 </h4>
                             </div>
                             <div class="modal-body">
-                                <form role="form" action="/management/permission/update/" method="post" >
+                                <form role="form" action="/management/order/update/" method="post" enctype = "multipart/form-data">
                                     {% csrf_token %}
                                     <div class="form-group">
-                                        <label for="update_id">ID</label><input type="text" class="form-control" name="update_id" readonly="readonly" id="update_id" />
+                                        <label for="update_id">ID</label><input type="text" class="form-control" name="update_id" id="update_id" readonly="readonly" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="update_url">URL</label><input type="text" class="form-control" name="update_url" id="update_url" />
+                                        <label for="update_customer">购买用户</label><input type="text" class="form-control" name="update_customer" id="update_customer" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="update_description">描述信息</label><input type="text" class="form-control" name="update_description" id="update_description" />
+                                        <label for="update_order_number">订单号码</label><input type="text" class="form-control" name="update_order_number" id="update_order_number" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="update_group_id">用户组</label>
-                                        <select name="update_group_id" id="update_group_id" class="form-control">
-                                            <option value="1">管理员</option>
-                                            <option value="2">顾客</option>
+                                        <label for="update_money">付款金额</label><input type="text" class="form-control" name="update_money" id="update_money" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_order_status">订单状态</label>
+                                        <select name="update_order_status" id="update_order_status" class="form-control">
+                                            <option value="1">已完成</option>
+                                            <option value="0">未完成</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_pay_status">支付状态</label>
+                                        <select name="update_pay_status" id="update_pay_status" class="form-control">
+                                            <option value="1">已支付</option>
+                                            <option value="0">未支付</option>
                                         </select>
                                     </div>
                                     <button type="submit" class="btn btn-default btn-primary">提交</button>
@@ -229,56 +266,67 @@
                         </div> 
                     </div>
                 </div> 
-                <!-- 添加权限模态框 -->
+                <!-- 添加订单态框 -->
                 <div class="modal fade" id="modal-container-207299" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                                 <h4 class="modal-title" id="myModalLabel">
-                                    添加权限
+                                    添加订单
                                 </h4>
                             </div>
                             <div class="modal-body">
-                                <form role="form" action="/management/permission/add/" method="post" enctype = "multipart/form-data">
+                                <form role="form" action="/management/order/add/" method="post" enctype = "multipart/form-data">
                                     {% csrf_token %}
                                     <div class="form-group">
-                                        <label for="url">URL</label><input type="text" class="form-control" name="url" />
+                                        <label for="customer">购买用户</label><input type="text" class="form-control" name="customer" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="description">描述信息</label><input type="text" class="form-control" name="description" />
+                                        <label for="order_number">订单号码</label><input type="text" class="form-control" name="order_number" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="group_id">用户组</label>
-                                        <select name="group_id" class="form-control">
-                                            <option value="1">管理员</option>
-                                            <option value="2">顾客</option>
+                                        <label for="money">付款金额</label><input type="text" class="form-control" name="money" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="order_status">订单状态</label>
+                                        <select name="order_status" id="order_status" class="form-control">
+                                            <option value="1">已完成</option>
+                                            <option value="0">未完成</option>
                                         </select>
                                     </div>
+                                    <div class="form-group">
+                                        <label for="pay_status">支付状态</label>
+                                        <select name="pay_status" id="pay_status" class="form-control">
+                                            <option value="1">已支付</option>
+                                            <option value="0">未支付</option>
+                                        </select>
+                                    </div>
+                                    
                                     <button type="submit" class="btn btn-default btn-primary">提交</button>
                                 </form>
                             </div>
                         </div> 
                     </div>
                 </div> 
-                <!--批量导入权限的模态框-->
+                <!--批量导入订单的模态框-->
                 <div class="modal fade" id="modal-container-207300" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                                 <h4 class="modal-title" id="myModalLabel">
-                                    导入权限
+                                    导入订单
                                 </h4>
                             </div>
                             <div class="modal-body">
-                                <form role="form" action="/management/permission/import/" method="post" enctype = "multipart/form-data">
+                                <form role="form" action="/management/order/import/" method="post" enctype = "multipart/form-data">
                                     {% csrf_token %}
                                     <div style="margin-top: 15px;" class="form-group">
-                                            <label for="permission_file">请上传EXCEL文件</label><input role="button"  type="file" name="permission_file" />
+                                            <label for="order_file">请上传EXCEL文件</label><input role="button"  type="file" name="order_file" />
                                         <p style="margin-top: 10px;" class="help-block">
                                             模板下载链接如下:
-                                            <a href="/management/permission/download/">点击下载</a>
+                                            <a href="/management/order/download/">点击下载</a>
                                         </p>
                                     </div>
                                     <button type="submit" class="btn btn-default btn-primary">导入</button>
