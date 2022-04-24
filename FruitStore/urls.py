@@ -67,7 +67,13 @@ urlpatterns = [
     path('management/order/page',views.order_management_page),
     path('management/order/search/',views.order_management_search_order),
     path('management/order/search/page',views.order_management_search_order_page),
-    path('management/order/search/customer/',views.order_management_search_order_by_customer),
-    path('management/order/search/customer/page',views.order_management_search_order_by_customer_page),
+    path('management/order/add/',views.order_management_add_order),
+    path('management/order/update/',views.order_management_update_order),
+    path('management/order/delete',views.order_management_delete_order),
+    path('management/order/logical_deletion',views.order_management_logical_deletion_order),
+    path('management/order/import/',views.order_management_import_order),
+    path('management/order/download/',views.order_management_download_import_order_file),
+    path('management/order/send_order_goods',views.order_management_send_order_goods),
+
 ]
 
