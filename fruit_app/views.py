@@ -306,7 +306,6 @@ def user_send_message(request):
             errors = ''
             for key,value in form.errors.items():
                 errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
-            type = 'alert alert-dismissable alert-danger'
             messages.add_message(request, messages.ERROR, errors)
         return redirect('/index/')
         
@@ -420,7 +419,6 @@ def search_fruit_info(request):
             errors = ''
             for key,value in form.errors.items():
                 errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
-            type = 'alert alert-dismissable alert-danger'
             messages.add_message(request, messages.ERROR, errors)
             #print(request.get_full_path())
             return redirect('/getfruitList/')
@@ -593,7 +591,7 @@ def shopping_cart(request):
             shopping_cart_datas =  models.ShoppingCart.objects.filter(customer_id = user_id).order_by('-add_fruit_time')[0:5]
             for data in shopping_cart_datas:
                 #使用data里的fruit_id查询商品信息
-                if data.order_number == '0':
+                if data.is_submit == 0:
                     fruit_data = models.Fruits.objects.filter(id = data.fruit_id).first()
                     if fruit_data:
                         picture_file_name = str(fruit_data.fruit_pic_file_name)
@@ -633,7 +631,7 @@ def shopping_cart_page(request):
                 shopping_cart_datas =  models.ShoppingCart.objects.filter(customer_id = user_id).order_by('-add_fruit_time')[search_start_num:search_end_num]
                 for data in shopping_cart_datas:
                     #使用data里的fruit_id查询商品信息
-                    if data.order_number == '0':
+                    if data.is_submit== 0:
                         fruit_data = models.Fruits.objects.filter(id = data.fruit_id).first()
                         if fruit_data:
                             picture_file_name = str(fruit_data.fruit_pic_file_name)
@@ -715,7 +713,7 @@ def payment_page(request):
             shopping_cart_datas =  models.ShoppingCart.objects.filter(customer_id = user_id).order_by('-add_fruit_time').all()
             for data in shopping_cart_datas:
                 #使用data里的fruit_id查询商品信息
-                if data.order_number == '0':
+                if data.is_submit == 0:
                     fruit_data = models.Fruits.objects.filter(id = data.fruit_id).first()
                     if fruit_data:
                         picture_file_name = str(fruit_data.fruit_pic_file_name)
@@ -748,21 +746,17 @@ def payment_page(request):
                 address3 = address_info.address3
             
             if len(list_shopping_cart_data) != 0:
-                #生成订单号
-                order_number = 'F' + str(time.time()).replace('.','')
-                #将订单号更新到购物车表数据中
+                #修改购物车条目的状态
                 for j in shopping_cart_datas:
-                    if j.order_number == '0':
-                        j.order_number = order_number
+                    if j.is_submit == 0:
+                        j.is_submit = 1
                         j.save()
                 
                 #添加数据到订单表中
-                test1 = models.FruitOrder(id = None,customer = user_id,order_number = order_number,money = total_amount,pay_status = '0', order_status= '0')
-                test1.save()
-            else:
-                order_number = None
+                # test1 = models.FruitOrder(id = None,customer = user_id,money = total_amount,pay_status = 0, order_status= 0,address = address1)
+                # test1.save()
             #渲染页面
-            dic1 = {'current_user':current_user,'address1':address1,'address2':address2,'address3':address3,'total_amount':total_amount,'order_number':order_number}
+            dic1 = {'current_user':current_user,'address1':address1,'address2':address2,'address3':address3,'total_amount':total_amount}
             return render(request,'order_balance_page.html',{'shopping_cart_data':list_shopping_cart_data,'dic1':dic1})
         else:
             messages.add_message(request,messages.ERROR,' 数据不存在!')
@@ -816,8 +810,8 @@ def user_management_page(request):
 #用户管理查询用户
 def user_management_search_user(request):
     current_user = request.user
-    form = forms.SearchUserForm(request.POST)
     if request.method == 'POST':
+        form = forms.SearchUserForm(request.POST)
         if form.is_valid():
             username = request.POST.get('username')
             if username:
@@ -1068,7 +1062,6 @@ def user_management_import_user(request):
                         messages.add_message(request,messages.ERROR,' 空数据!')
                 else:
                     messages.add_message(request,messages.ERROR,' 请上传excel文件!')
-
             else:
                 messages.add_message(request,messages.ERROR,' 文件不存在!')
         else:
@@ -1154,7 +1147,6 @@ def permission_management_search_by_url(request):
             errors = ''
             for key,value in form.errors.items():
                 errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
-            type = 'alert alert-dismissable alert-danger'
             messages.add_message(request, messages.ERROR, errors)
         return redirect('/management/permission/')
 
@@ -1412,7 +1404,6 @@ def permission_management_update_permission(request):
 
 #权限管理删除权限数据
 def permission_management_delete_permission(request):
-    current_user = request.user
     if request.method == 'GET':
         delete_permission_id = request.GET.get('id')
         try:
@@ -1433,7 +1424,7 @@ def permission_management_delete_permission(request):
 def order_management(request):
     current_user = request.user
     if request.method == 'GET':
-        order_info = models.FruitOrder.objects.all().order_by('-add_order_time')[0:10]
+        order_info = models.FruitOrder.objects.filter(logical_deletion = False).order_by('-add_order_time')[0:10]
         #用户名缓存 {customer_id:name}
         username_dic = {}
         for j in order_info:
@@ -1465,7 +1456,7 @@ def order_management_page(request):
             #根据页码限制返回权限数据
             search_start_num = (page_number-1)*10
             search_end_num = page_number*10
-            order_info = models.FruitOrder.objects.all().order_by('-add_order_time')[search_start_num:search_end_num]
+            order_info = models.FruitOrder.objects.filter(logical_deletion = False).order_by('-add_order_time')[search_start_num:search_end_num]
             #用户名缓存 {customer_id:name}
             username_dic = {}
             for j in order_info:
@@ -1492,7 +1483,7 @@ def order_management_search_order(request):
             order_number = request.POST.get('order_number')
             #模糊查询订单号
             if order_number:
-                search_orders = models.FruitOrder.objects.filter(order_number__contains = order_number).order_by('-add_order_time')[0:10]
+                search_orders = models.FruitOrder.objects.filter(order_number__contains = order_number,logical_deletion = False).order_by('-add_order_time')[0:10]
                 #用户名缓存 {customer_id:name}
                 username_dic = {}
                 for j in search_orders:
@@ -1510,7 +1501,7 @@ def order_management_search_order(request):
                     j.style = random.choice(['error','info','success','warning'])
                 #数据为空给个消息提示
                 if len(search_orders) == 0:
-                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的权限条目!')  
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的订单条目!')  
                 #渲染页面
                 dic1 = {'current_user':current_user,'page_number':1,'order_number':order_number}
                 return render(request,'management_order_search.html',{'form':form,'dic1':dic1,'order_data':search_orders}) 
@@ -1522,7 +1513,6 @@ def order_management_search_order(request):
             errors = ''
             for key,value in form.errors.items():
                 errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
-            type = 'alert alert-dismissable alert-danger'
             messages.add_message(request, messages.ERROR, errors)
             return redirect('/management/order/')
     
@@ -1542,7 +1532,7 @@ def order_management_search_order_page(request):
                 #根据页码限制返回权限数据
                 search_start_num = (page_number-1)*10
                 search_end_num = page_number*10
-                order_info = models.FruitOrder.objects.filter(order_number__contains = order_number).order_by('-add_order_time')[search_start_num:search_end_num]
+                order_info = models.FruitOrder.objects.filter(order_number__contains = order_number,logical_deletion = False).order_by('-add_order_time')[search_start_num:search_end_num]
                 #用户名缓存 {customer_id:name}
                 username_dic = {}
                 for j in order_info:
@@ -1553,6 +1543,7 @@ def order_management_search_order_page(request):
                         user_info = User.objects.filter(id = customer_id).first()
                         if user_info:
                             j.customer = user_info.username
+                            username_dic[customer_id] = user_info.username
                         else:
                             messages.add_message(request,messages.ERROR,' 用户不存在!')
                     #给表格加style
@@ -1563,37 +1554,268 @@ def order_management_search_order_page(request):
             messages.add_message(request,messages.ERROR,' order_number参数错误!')
             return redirect('/management/order/')
 
-#订单管理按照购买用户查询
-def order_management_search_order_by_customer(request):
-    pass
-
-#订单管理按照购买用户查询翻页
-def order_management_search_order_by_customer_page(request):
-    pass
-
 #订单管理新增订单
 def order_management_add_order(request):
-    pass
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementOrderAdd(request.POST)
+        if form.is_valid():
+            customer = request.POST.get('customer')
+            order_number = request.POST.get('order_number')
+            money = request.POST.get('money')
+            order_status = request.POST.get('order_status')
+            pay_status = request.POST.get('pay_status')
+            #根据用户名查询user_id
+            user_info = User.objects.filter(username = customer).first()
+            if user_info:
+                customer_id = user_info.id
+                if order_number and money and order_status and pay_status:
+                    try:
+                        test1 = models.FruitOrder(id = None, order_number = order_number,customer = customer_id,money =  float(money) ,order_status = int(order_status),pay_status = int(pay_status))
+                        test1.save()
+                        messages.add_message(request,messages.SUCCESS,' 添加成功!')
+                    except:
+                        messages.add_message(request,messages.ERROR,' 数据库异常!')
+                else:
+                    messages.add_message(request,messages.ERROR,' 参数错误!') 
+            else:
+                messages.add_message(request,messages.ERROR,' 用户不存在! 无法添加订单数据!')  
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+        return redirect('/management/order/')
 
 #订单管理修改订单
 def order_management_update_order(request):
-    pass
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementOrderUpdate(request.POST)
+        if form.is_valid():
+            update_id = request.POST.get('update_id')
+            customer = request.POST.get('update_customer')
+            order_number = request.POST.get('update_order_number')
+            money = request.POST.get('update_money')
+            order_status = int(request.POST.get('update_order_status'))
+            pay_status = int(request.POST.get('update_pay_status'))
+            #根据update_id查询对应订单
+            order_info = models.FruitOrder .objects.filter(id = update_id).first()
+            if order_info:
+                #对比字段的变动
+                #对比customer 字段是需要查询ID
+                #根据用户名查询user_id
+                message_list = []
+                user_info = User.objects.filter(username = customer).first()
+                if user_info:
+                    customer_id = user_info.id
+                    if order_info.customer != customer_id:
+                        order_info.customer = customer_id
+                        message_list.append(' 购买用户 ')
+                else:
+                    message_list.append(' 购买用户( 失败!) ')
+
+                if order_info.order_number != order_number:
+                    order_info.order_number = order_number
+                    message_list.append(' 订单号 ')
+
+                if float(order_info.money) != float(money):
+                    order_info.money = float(money)
+                    message_list.append(' 付款金额 ')
+
+                if order_info.order_status != order_status:
+                    order_info.order_status = order_status
+                    message_list.append(' 订单状态 ')
+
+                if order_info.pay_status != pay_status:
+                    order_info.pay_status = pay_status
+                    message_list.append(' 支付状态 ')
+                #保存
+                order_info.save()
+                all_msg = ''
+                for msg in message_list:
+                    all_msg += msg
+                if all_msg == '':
+                    messages.add_message(request,messages.SUCCESS,'修改字段: 0个 成功!')
+                else:
+                    messages.add_message(request,messages.SUCCESS,'修改字段: ' + all_msg + ' 成功!')
+            else:
+                messages.add_message(request,messages.ERROR,' 订单不存在! 无法修改订单数据!')  
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+        return redirect('/management/order/')
 
 #订单管理导入订单
 def order_management_import_order(request):
-    pass
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementOrderImport(request.POST,request.FILES)
+        if form.is_valid():
+            order_file = request.FILES.get('order_file')
+            if order_file:
+                file_extension = os.path.splitext(order_file.name)[-1]
+                if '.xlsx' == file_extension or '.xls' == file_extension:
+                    file_name =  str(time.time()) + file_extension
+                    order_file_dir = os.getcwd() + os.path.join(os.sep,'temp', file_name)
+                    #保存文件到临时文件目录temp
+                    with open(order_file_dir,'wb') as f:
+                        for chunk in order_file.chunks():
+                            f.write(chunk)
+                    #读取excel写入数据库
+                    work_book = xlrd.open_workbook (order_file_dir)
+                    ws = work_book.sheet_by_name('Sheet1')
+                    #读取第一行数据
+                    if ws.nrows != 0:
+                        line_1_values = ws.row_values(0)
+                        if line_1_values == ['购买用户','订单号码','付款金额','订单状态','支付状态']:
+                            message_list = []
+                            #customer_dic 缓存{customer:id}
+                            customer_id_dic = {}
+                            for i in range(1,ws.nrows):
+                                try:
+                                    values_list = ws.row_values(i)
+                                    customer = values_list[0]
+                                    order_number = values_list[1]
+                                    money = values_list[2]
+                                    order_status = int(values_list[3])
+                                    pay_status = int(values_list[4])
+                                    #定义customer_id
+                                    customer_id = None
+                                    if customer in customer_id_dic:
+                                        customer_id = customer_id_dic[customer]
+                                    else:
+                                        user_info = User.objects.filter(username = customer).first()
+                                        if user_info:
+                                            customer_id = user_info.id
+                                            #更新到字典中，以便下次直接在dic中取值
+                                            customer_id_dic[customer] = customer_id
+                                    #加入数据库
+                                    if customer_id:
+                                        test1 = models.FruitOrder(id = None,customer = customer_id,order_number= order_number,\
+                                            money = money,order_status = order_status,pay_status = pay_status)
+                                        test1.save()
+                                        #加入消息列表
+                                        msg = ' 导入订单 ' +str((customer,order_number,money,order_status,pay_status)) +' 成功!'
+                                        message_list.append(msg)
+                                    else:
+                                        msg = ' 导入订单 ' +str((customer,order_number,money,order_status,pay_status)) +' 失败! 用户不存在!'
+                                        message_list.append(msg)
+                                except:
+                                    #加入消息列表
+                                    msg = ' 导入订单 ' +str((customer,order_number,money,order_status,pay_status)) +' 失败!'
+                                    message_list.append(msg)
+                            #从message_list 取提示
+                            msgs = ''
+                            for msg in message_list:
+                                msgs += msg
+                            messages.add_message(request,messages.ERROR,msgs)
+                        else:
+                            messages.add_message(request,messages.ERROR,' 数据格式错误!')
+                    else:
+                        messages.add_message(request,messages.ERROR,' 空数据!')
+                else:
+                    messages.add_message(request,messages.ERROR,' 请上传excel文件!')
+            else:
+                messages.add_message(request,messages.ERROR,' 文件不存在!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)
+        return redirect('/management/order/')
+
 
 #订单管理删除订单
 def order_management_delete_order(request):
-    pass
+    if request.method == 'GET':
+        delete_order_id = request.GET.get('id')
+        try:
+            delete_order_id = int(delete_order_id)
+        except:
+            messages.add_message(request,messages.ERROR,' delete_order_id参数错误!')
+        else:
+            order_info = models.FruitOrder.objects.filter(id = delete_order_id).first()
+            if order_info:
+                order_info.delete()
+                order_info.save()
+                messages.add_message(request,messages.SUCCESS,' 删除成功!')
+            else:
+                messages.add_message(request,messages.ERROR,' 删除失败!')
+        return redirect('/management/order/')
 
 #订单管理删除订单(逻辑删除)
-def order_management_delete1_order(request):
-    pass
+def order_management_logical_deletion_order(request):
+    if request.method == 'GET':
+        delete_order_id = request.GET.get('id')
+        try:
+            delete_order_id = int(delete_order_id)
+        except:
+            messages.add_message(request,messages.ERROR,' delete_order_id参数错误!')
+        else:
+            order_info = models.FruitOrder.objects.filter(id = delete_order_id).first()
+            if order_info:
+                #修改logical_deletion字段为True
+                order_info.logical_deletion = True
+                order_info.save()
+                messages.add_message(request,messages.SUCCESS,' 逻辑删除成功!')
+            else:
+                messages.add_message(request,messages.ERROR,' 逻辑删除失败!')
+        return redirect('/management/order/')
+
+#订单管理导入订单数据下载模板
+def order_management_download_import_order_file(request):
+    if request.method == 'GET':
+        permission_template_file = os.getcwd() + os.path.join(os.sep,'media','template_import_order.zip')
+        if os.path.isfile(permission_template_file) == True:
+            try:
+                f = open(permission_template_file,'rb')
+                response = FileResponse(f)
+                response['Content-Type'] = 'application/octet-stream'
+                response['Content-Disposition'] = 'attachment;filename=' + 'template_import_order.zip'
+                return response
+            except:
+                messages.add_message(request,messages.ERROR,' 下载失败!')
+                return redirect('/management/order/')
+        else:
+            messages.add_message(request,messages.ERROR,' 模板文件不存在!')
+            return redirect('/management/order/')
+
 
 #订单管理发货操作
 def order_management_send_order_goods(request):
-    pass
+    current_user = request.user
+    if request.method == 'GET':
+        order_id = request.GET.get('id')
+        try:
+            order_id = int(order_id)
+        except:
+            messages.add_message(request,messages.ERROR,' order_id参数错误!')
+        else:
+            order_info = models.FruitOrder.objects.filter(id = order_id).first()
+            if order_info:
+                #判断支付状态为1时才可以发货
+                if order_info.pay_status == 1:
+                    messages.add_message(request,messages.SUCCESS,' 发货操作成功! 物流信息可去物流管理中查询!')
+                    #获取收货地址
+
+                    #将订单标记为已完成
+                    if order_info.order_status == 0:
+                        order_info.order_status = 1
+                        order_info.save()
+                    
+
+                else:
+                    messages.add_message(request,messages.ERROR,' 当前订单还未支付! 不允许进行发货操作!')
+            else:
+                messages.add_message(request,messages.ERROR,' 订单不存在!')
+        return redirect('/management/order/')
+                
 
 
 
