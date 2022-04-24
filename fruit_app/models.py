@@ -56,16 +56,19 @@ class ShoppingCart(models.Model):
     fruit_id = IntegerField()
     fruit_number = IntegerField()
     order_number = CharField(max_length = 100,default = '0')
+    is_submit = BooleanField(default= 0)
     add_fruit_time = DateTimeField(default = timezone.now)
 
 #订单表
 class FruitOrder(models.Model):
     id = AutoField(primary_key = True)
-    customer =  CharField(max_length = 100,default = '')
+    customer =  IntegerField(default = 0)
     order_number = CharField(max_length = 100,default = '')
     money = DecimalField(max_digits = 8,decimal_places = 2)
-    pay_status = CharField(max_length = 100,default = '')
-    order_status = CharField(max_length = 100,default = '')
+    pay_status = IntegerField(default = 0)
+    order_status = IntegerField(default = 0)
+    logical_deletion = BooleanField(default= 0)
+    address = CharField(max_length = 100,default = '')
     add_order_time = DateTimeField(default = timezone.now)
 
 
@@ -77,3 +80,4 @@ class RoutePermission(models.Model):
     description = CharField(max_length = 100,default = '')
     add_route_permission_time = DateTimeField(default = timezone.now)
 
+    
