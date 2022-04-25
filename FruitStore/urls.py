@@ -41,6 +41,8 @@ urlpatterns = [
     path('shopping_cart/fruit/update/',views.update_shopping_cart_fruit_number), 
     path('shopping_cart/fruit/delete',views.delete_shopping_cart__fruit),
     path('settle_accounts/',views.payment_page),
+    path('confirm/order/',views.confirm_order),
+    path('pay/',views.ali_pay),
     path('management/',views.user_management), 
     path('management/user',views.user_management_page), 
     path('searchUser/',views.user_management_search_user),
@@ -74,6 +76,16 @@ urlpatterns = [
     path('management/order/import/',views.order_management_import_order),
     path('management/order/download/',views.order_management_download_import_order_file),
     path('management/order/send_order_goods',views.order_management_send_order_goods),
+    path('management/goods/',views.goods_management),
+    path('management/goods/page',views.goods_management_page),
+    path('management/goods/add/',views.goods_management_add_goods),
+    path('management/goods/update',views.goods_management_update_goods),
+    path('management/goods/delete',views.goods_management_delete_goods),
+    path('management/goods/import/',views.goods_management_import_goods),
+    path('management/goods/search/',views.goods_management_search_goods),
+    path('management/goods/search/page',views.goods_management_search_goods_page),
+    path('management/goods/search/type',views.goods_management_search_goods_by_fruit_type),
+    path('management/goods/search/type/page',views.goods_management_search_goods_by_fruit_type_page),
 
 ]
 
