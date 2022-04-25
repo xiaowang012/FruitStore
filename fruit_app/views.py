@@ -324,6 +324,7 @@ def user_delete_message(request):
                 if str(current_user) == comments_info.commenting_user:
                     #判断当前操作用户是否为评论用户
                     comments_info.delete()
+                   
                     messages.add_message(request,messages.SUCCESS,' 删除成功!')
                 else:
                     messages.add_message(request,messages.ERROR,'错误! 无法删除别人的评论!')
@@ -702,69 +703,130 @@ def delete_shopping_cart__fruit(request):
 def payment_page(request):
     current_user = request.user
     if request.method == 'GET':
-        #通过user查ID
-        user_1 =  User.objects.filter(username = current_user).first()
-        if user_1:
-            #定义需付总金额
-            total_amount = 0.00
-            #定义一个字典
-            list_shopping_cart_data = []
-            user_id = user_1.id
-            shopping_cart_datas =  models.ShoppingCart.objects.filter(customer_id = user_id).order_by('-add_fruit_time').all()
-            for data in shopping_cart_datas:
-                #使用data里的fruit_id查询商品信息
-                if data.is_submit == 0:
-                    fruit_data = models.Fruits.objects.filter(id = data.fruit_id).first()
-                    if fruit_data:
-                        picture_file_name = str(fruit_data.fruit_pic_file_name)
-                        if ';' in picture_file_name:
-                            pictures_list = picture_file_name.split(';')
-                            fruit_data.pic_html = '/static/imgs/' + pictures_list[0]
-                        else:
-                            fruit_data.pic_html = '/static/imgs/' + picture_file_name
-                        
-                        #计算单品的需付金额(保留两位小数)
-                        #c = '%.2f'%a
-                        amount = data.fruit_number*2*fruit_data.fruit_price
-                        fruit_amount = float('%.2f'%amount)
-                        total_amount += fruit_amount
-                        
-                        dic_data = {'shopping_cart_id':data.id,'fruit_number':data.fruit_number,'pic_html':fruit_data.pic_html,'fruit_name':fruit_data.fruit_name,\
-                            'fruit_description':fruit_data.fruit_description,'fruit_price':fruit_data.fruit_price,'fruit_weight':fruit_data.fruit_weight,'fruit_amount':fruit_amount}
-                        list_shopping_cart_data.append(dic_data)
-            
-            #总金额保留两位小数
-            total_amount = float('%.2f'%total_amount)
+        #首先查询购物车中是否有数据
+        #is_submit = 0表示有数据  =1时表示已经加入清空过购物车
+        #根据当前用户查询用户id
+        user_info = User.objects.filter(username = current_user).first()
+        list_shopping_cart_data = []
+        #总金额
+        total_amount = 0.0
+        if user_info:
+            customer_id = user_info.id
+            #根据customer_id ,is_submit查询数据
+            fruits_shop_data = models.ShoppingCart.objects.filter(customer_id = customer_id,is_submit = 0).order_by('-add_fruit_time').all()
+            for data in fruits_shop_data:
+                #查询水果价格
+                fruit_data = models.Fruits.objects.filter(id = data.fruit_id).first()
+                if fruit_data:
+                    picture_file_name = str(fruit_data.fruit_pic_file_name)
+                    if ';' in picture_file_name:
+                        pictures_list = picture_file_name.split(';')
+                        fruit_data.pic_html = '/static/imgs/' + pictures_list[0]
+                    else:
+                        fruit_data.pic_html = '/static/imgs/' + picture_file_name
+                    
+                    #计算单品的需付金额(保留两位小数)
+                    amount = data.fruit_number*2*fruit_data.fruit_price
+                    fruit_amount = float('%.2f'%amount)
+                    total_amount += fruit_amount
+
+                    #渲染数据
+                    dic_data = {'shopping_cart_id':data.id,'fruit_number':data.fruit_number,'pic_html':fruit_data.pic_html,'fruit_name':fruit_data.fruit_name,\
+                                'fruit_description':fruit_data.fruit_description,'fruit_price':fruit_data.fruit_price,'fruit_weight':fruit_data.fruit_weight,'fruit_amount':fruit_amount}
+                    list_shopping_cart_data.append(dic_data)
+
+                #计算单个条目完成后将is_submit 改为1
+                data.is_submit = 1 
+                data.save()  
+
             #查询收货地址
             address1 = None
             address2 = None
             address3 = None
-            address_info = models.UserInfo.objects.filter(user_id = user_id).first()
+            address_info = models.UserInfo.objects.filter(user_id = customer_id).first()
             if address_info:
                 address1 = address_info.address1
                 address2 = address_info.address2
                 address3 = address_info.address3
-            
-            if len(list_shopping_cart_data) != 0:
-                #修改购物车条目的状态
-                for j in shopping_cart_datas:
-                    if j.is_submit == 0:
-                        j.is_submit = 1
-                        j.save()
+
+            #总金额保留两位小数
+            total_amount = float('%.2f'%total_amount)
+            #通过金额判断是否有商品数据，若有数据则生成订单
+            # print(total_amount)
+            if total_amount != 0.0:
                 
-                #添加数据到订单表中
-                # test1 = models.FruitOrder(id = None,customer = user_id,money = total_amount,pay_status = 0, order_status= 0,address = address1)
-                # test1.save()
-            #渲染页面
-            dic1 = {'current_user':current_user,'address1':address1,'address2':address2,'address3':address3,'total_amount':total_amount}
+                order_number = 'SGSD' + str(time.time()).replace('.','')
+                test1 = models.FruitOrder(id = None,order_number = order_number,customer = customer_id,money = total_amount,pay_status = 0, order_status= 0,address = address1)
+                test1.save()
+            else:
+                messages.add_message(request,messages.ERROR,' 商品数据不存在!')
+                return redirect('/my_shopping_cart/')
+
+            dic1 = {'current_user':current_user,'address1':address1,'address2':address2,'address3':address3,'total_amount':total_amount,'order_number':order_number}
             return render(request,'order_balance_page.html',{'shopping_cart_data':list_shopping_cart_data,'dic1':dic1})
         else:
             messages.add_message(request,messages.ERROR,' 数据不存在!')
-            return redirect('/settle_accounts/')
-            
-#付款(支付宝接口付款)
+            return redirect('/my_shopping_cart/')
+
+#确认订单
+def confirm_order(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ConfirmOrder(request.POST)
+        if form.is_valid():
+            order_number = request.POST.get('order_number')
+            select_address = request.POST.get( 'optionsRadios')
+            print(order_number,select_address)
+            if order_number and select_address:
+                order_info = models.FruitOrder.objects.filter(order_number = order_number).first()
+                if order_info:
+                    address1 = ''
+                    address2 = ''
+                    address3 = ''
+                    user_id_info = User.objects.filter(username = current_user).first()
+                    if user_id_info:
+                        user_id = user_id_info.id
+                        user_address = models.UserInfo.objects.filter(user_id = user_id).first()
+                        if user_address:
+                            address1 = user_address.address1
+                            address2 = user_address.address2
+                            address3 = user_address.address3
+                        #更新地址
+                        if select_address == 'option1':
+                            order_info.address = address1
+                            order_info.save()
+                        elif select_address == 'option2':
+                            order_info.address = address2
+                            order_info.save()
+                        elif select_address == 'option3':
+                            order_info.address = address3
+                            order_info.save()
+                        messages.add_message(request,messages.SUCCESS,' 生成订单成功! 请去支付!')
+                        return redirect('/pay/')
+                    else:
+                        messages.add_message(request,messages.ERROR,' 用户不存在!')
+                        return redirect('/my_shopping_cart/')
+                else:
+                    messages.add_message(request,messages.ERROR,' 订单不存在!')
+                    return redirect('/my_shopping_cart/')
+            else:
+                messages.add_message(request,messages.ERROR,' order_number,select_address参数错误!')
+                return redirect('/my_shopping_cart/')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)             
+            return redirect('/my_shopping_cart/')
+
+#支付宝支付页面
 def ali_pay(request):
-    pass
+    current_user = request.user
+    if request.method == 'GET':
+        dic1 = {'current_user':current_user}
+        return render(request,'pay.html',{'dic1':dic1})
+
 
 #用户管理
 def user_management(request):
@@ -923,7 +985,7 @@ def user_management_delete_user(request):
             userinfo = User.objects.filter(id = user_id).first()
             if userinfo:
                 userinfo.delete()
-                userinfo.save()
+                
                 messages.add_message(request,messages.SUCCESS,' 删除成功!')
             else:
                 messages.add_message(request,messages.ERROR,' 删除失败!')
@@ -1414,7 +1476,7 @@ def permission_management_delete_permission(request):
             permission_info = models.RoutePermission.objects.filter(id = delete_permission_id).first()
             if permission_info:
                 permission_info.delete()
-                permission_info.save()
+               
                 messages.add_message(request,messages.SUCCESS,' 删除成功!')
             else:
                 messages.add_message(request,messages.ERROR,' 删除失败!')
@@ -1743,7 +1805,6 @@ def order_management_delete_order(request):
             order_info = models.FruitOrder.objects.filter(id = delete_order_id).first()
             if order_info:
                 order_info.delete()
-                order_info.save()
                 messages.add_message(request,messages.SUCCESS,' 删除成功!')
             else:
                 messages.add_message(request,messages.ERROR,' 删除失败!')
@@ -1786,7 +1847,7 @@ def order_management_download_import_order_file(request):
             messages.add_message(request,messages.ERROR,' 模板文件不存在!')
             return redirect('/management/order/')
 
-
+#未完成
 #订单管理发货操作
 def order_management_send_order_goods(request):
     current_user = request.user
@@ -1808,8 +1869,11 @@ def order_management_send_order_goods(request):
                     if order_info.order_status == 0:
                         order_info.order_status = 1
                         order_info.save()
-                    
-
+                    #暂时先不写后续操作#####################
+                    #####################
+                    #####################
+                    #####################
+                    #####################
                 else:
                     messages.add_message(request,messages.ERROR,' 当前订单还未支付! 不允许进行发货操作!')
             else:
@@ -1817,11 +1881,175 @@ def order_management_send_order_goods(request):
         return redirect('/management/order/')
                 
 
-
-
 #商品管理
 def goods_management(request):
+    current_user = request.user
+    if request.method == 'GET':
+        #查询商品数据
+        goods_info = models.Fruits.objects.all().order_by('-add_fruit_time')[0:10]
+        for j in goods_info:
+            #给表格加style
+            j.style = random.choice(['error','info','success','warning']) 
+    dic1 = {'current_user':current_user,'page_number':1}
+    return render(request,'management_goods.html',{'dic1':dic1,'goods_data':goods_info})
+
+#商品管理翻页
+def goods_management_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        page_number = request.GET.get('page_number')
+        try:
+            page_number = int(page_number)
+        except:
+            messages.add_message(request,messages.ERROR,' page_number参数错误!')
+        else:
+            #根据页码限制返回数据
+            search_start_num = (page_number-1)*10
+            search_end_num = page_number*10
+            #查询商品数据
+            goods_info = models.Fruits.objects.all().order_by('-add_fruit_time')[search_start_num:search_end_num]
+            for j in goods_info:
+                #给表格加style
+                j.style = random.choice(['error','info','success','warning']) 
+    dic1 = {'current_user':current_user,'page_number':page_number}
+    return render(request,'management_goods.html',{'dic1':dic1,'goods_data':goods_info})
+
+#商品管理添加商品
+def goods_management_add_goods(request):
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementGoodsAdd(request.POST,request.FILES)
+        if form.is_valid():
+            fruit_name = request.POST.get('fruit_name')
+            fruit_type_id = request.POST.get('fruit_type_id')
+            fruit_description = request.POST.get('fruit_description')
+            fruit_price = request.POST.get('fruit_price')
+            fruit_weight = request.POST.get('fruit_weight')
+            transportation_price = request.POST.get('transportation_price')
+            Sales = request.POST.get('Sales')
+            fruit_picture1 = request.FILES.get('fruit_picture1')
+            fruit_picture2 = request.FILES.get('fruit_picture2')
+            fruit_picture3 = request.FILES.get('fruit_picture3')
+            #print(fruit_name,fruit_type_id,fruit_description,fruit_price,fruit_weight,Sales,fruit_picture1.name)
+            #fruit_picture2.name,fruit_picture3.name
+            #将接收到的文件判断类型，图片1
+            picture_list = []
+            if fruit_picture1:
+                file_extension = os.path.splitext(fruit_picture1.name)[-1]
+                if file_extension in ['.jpg','.jpeg','.png']:
+                    file_name =  str(time.time()) + file_extension
+                    picture_file_dir = os.getcwd() + os.sep + 'static' +os.sep + 'imgs' + os.sep + file_name
+                    #保存图片文件到静态资源目录\static\imgs
+                    with open(picture_file_dir,'wb') as f:
+                        for chunk in fruit_picture1.chunks():
+                            f.write(chunk)
+                    #将图片名称加入list
+                    picture_list.append(file_name)
+                else:
+                    message1 =' 图片1格式错误!'
+            else:
+                messages .add_message(request,messages.ERROR,' 图片1不存在! 无法添加商品数据!')
+                return redirect('/management/goods/')
+            
+            #判断图片2
+            if fruit_picture2:
+                file_extension2 = os.path.splitext(fruit_picture2.name)[-1]
+                if file_extension2 in ['.jpg','.jpeg','.png']:
+                    file_name2 =  str(time.time()) + file_extension2
+                    picture_file_dir2 = os.getcwd() + os.sep + 'static' +os.sep + 'imgs' + os.sep + file_name2
+                    #保存图片文件到静态资源目录\static\imgs
+                    with open(picture_file_dir2,'wb') as f:
+                        for chunk in fruit_picture2.chunks():
+                            f.write(chunk)
+                    #将图片名称加入list
+                    picture_list.append(file_name2)
+                else:
+                    message1 =' 图片2格式错误!'
+
+            #判断图片3
+            if fruit_picture3:
+                file_extension3 = os.path.splitext(fruit_picture3.name)[-1]
+                if file_extension3 in ['.jpg','.jpeg','.png']:
+                    file_name3 =  str(time.time()) + file_extension3
+                    picture_file_dir3 = os.getcwd() + os.sep + 'static' +os.sep + 'imgs' + os.sep + file_name3
+                    #保存图片文件到静态资源目录\static\imgs
+                    with open(picture_file_dir3,'wb') as f:
+                        for chunk in fruit_picture3.chunks():
+                            f.write(chunk)
+                    #将图片名称加入list
+                    picture_list.append(file_name3)
+                else:
+                    message1 =' 图片3格式错误!'
+            
+            #根据接收的图片数更新字段fruit_pic_file_name  如有多张图片使用 ; 分隔
+            fruit_pic_file_name = ''
+            if len(picture_list) == 1:
+                fruit_pic_file_name = picture_list[0]
+            elif len(picture_list) > 1:
+                for j in picture_list:
+                    fruit_pic_file_name += j + ';'
+                #去掉最后一个分号
+                fruit_pic_file_name = fruit_pic_file_name.rstrip(';')
+            
+            #写入数据库
+            test1 = models.Fruits(id = None,fruit_name = fruit_name,fruit_type_id = int(fruit_type_id),fruit_description = fruit_description,fruit_price = float(fruit_price),\
+                fruit_weight = fruit_weight,Sales = int(Sales),fruit_pic_file_name = fruit_pic_file_name,transportation_price = float(transportation_price))
+            test1.save()
+            messages.add_message(request,messages.SUCCESS,' 添加商品成功! 请刷新后查看!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)
+        return redirect('/management/goods/')
+
+
+#商品管理修改商品
+def goods_management_update_goods(request):
     pass
+
+#商品管理删除商品
+def goods_management_delete_goods(request):
+    current_user = request.user
+    if request.method == 'GET':
+        delete_goods_id = request.GET.get('id')
+        try:
+            delete_goods_id = int(delete_goods_id)
+        except:
+            messages.add_message(request,messages.ERROR,' delete_goods_id参数错误!')
+        else:
+            #查询商品
+            goods_info = models.Fruits.objects.filter(id = delete_goods_id) .first()
+            if goods_info:
+                goods_info.delete()
+                messages.add_message(request,messages.SUCCESS,' 删除成功!')
+            else:
+                messages.add_message(request,messages.ERROR,' 商品不存在! 删除失败!')
+        return redirect('/management/goods/')
+
+#商品管理查询商品
+def goods_management_search_goods(request):
+    pass
+
+#商品管理查询商品翻页
+def goods_management_search_goods_page(request):
+    pass
+
+#商品管理分类查询商品
+def goods_management_search_goods_by_fruit_type(request):
+    pass
+
+#商品管理分类查询商品翻页
+def goods_management_search_goods_by_fruit_type_page(request):
+    pass
+
+#商品管理导入商品
+def goods_management_import_goods(request):
+    pass
+
+
+
 
 #账目管理
 def account_management(request):
