@@ -67,6 +67,12 @@ class UpdateFruitsNumberInShoppingcart(forms.Form):
     shopping_cart_id = forms.CharField(min_length=1,max_length=10,error_messages={"required":"商品id不能为空!","min_length":"商品id长度不能小于1!","max_length":"商品id长度不能大于10!"})
     fruit_number = forms.CharField(min_length=1,max_length=10,error_messages={"required":"购买数量不能为空!","min_length":"购买数量长度不能小于1!","max_length":"购买数量长度不能大于10!"})
 
+#确认订单,更新收获地址
+class ConfirmOrder(forms.Form):
+    order_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单号码不能为空!","min_length":"订单号码长度不能小于1!","max_length":"订单号码长度不能大于100!"})
+    optionsRadios = forms.CharField(min_length=1,max_length=10,error_messages={"required":"选择地址不能为空!","min_length":"选择地址长度不能小于1!","max_length":"选择地址长度不能大于10!"})
+
+
 #查询用户的表单
 class SearchUserForm(forms.Form):
     username = forms.CharField(min_length=1,max_length=100,error_messages={"required":"用户名不能为空!","min_length":"用户名长度不能小于1!","max_length":"用户名长度不能大于100!"})
@@ -132,3 +138,16 @@ class ManagementOrderUpdate(forms.Form):
 #后台管理订单管理批量导入订单表单
 class ManagementOrderImport(forms.Form):
     order_file = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
+
+#后台管理商品管理添加商品表单
+class ManagementGoodsAdd(forms.Form):
+    fruit_name = forms.CharField(min_length=1,max_length=50,error_messages={"required":"商品名称不能为空!","min_length":"商品名称长度不能小于1!","max_length":"商品名称长度不能大于50!"})
+    fruit_type_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"商品类型不能为空!","min_length":"商品类型长度不能小于1!","max_length":"商品类型长度不能大于50!"})
+    fruit_description = forms.CharField(min_length=1,max_length=200,error_messages={"required":"商品描述不能为空!","min_length":"商品描述长度不能小于1!","max_length":"商品描述长度不能大于200!"})
+    fruit_price = forms.DecimalField(max_digits=8,decimal_places=2,error_messages={"required":"商品价格不允许为空!","max_digits":"商品价格长度超出8位!","decimal_places":"商品价格小数点位数超出2位!"})
+    fruit_weight = forms.CharField(min_length=1,max_length=100,error_messages={"required":"规格不能为空!","min_length":"规格长度不能小于1!","max_length":"规格长度不能大于100!"})
+    transportation_price = forms.DecimalField(max_digits=8,decimal_places=2,error_messages={"required":"运输价格不允许为空!","max_digits":"运输价格长度超出8位!","decimal_places":"运输价格小数点位数超出2位!"})
+    Sales = forms.CharField(min_length=1,max_length=100,error_messages={"required":"销量不能为空!","min_length":"销量长度不能小于1!","max_length":"销量长度不能大于100!"})
+    fruit_picture1 = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"图片1不能为空!","empty":"不允许上传空文件!"})
+    fruit_picture2 = forms.FileField(required = False,allow_empty_file = False,error_messages={"empty":"图片2不允许上传空文件!"})
+    fruit_picture3 = forms.FileField(required = False,allow_empty_file = False,error_messages={"empty":"图片3不允许上传空文件!"})
