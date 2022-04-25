@@ -50,13 +50,13 @@
                         <div class="col-md-12 column">
                             <div style="margin-top: 20px;" class="tabbable" id="tabs-577358">
                                 <ul class="nav nav-tabs">
-                                    <li class="active" >
+                                    <li  >
                                         <a href="/management/" >用户管理</a>
                                     </li>
                                     <li  >
                                         <a href="/management/permission/">权限管理</a>
                                     </li>
-                                    <li  >
+                                    <li class="active"  >
                                        <a href="/management/goods/" >商品管理</a>
                                     </li>
                                     <li  >
@@ -74,7 +74,7 @@
                                 </ul>
                             </div>
                             <div style="margin-top: 20px;margin-left: -10px;" class="col-md-12 column">
-                                <span style="font-size: medium ;" class="label label-info">用户管理</span>
+                                <span style="font-size: medium ;" class="label label-info">商品管理</span>
                             </div>
                             <div style="margin-top:10px;margin-left: -10px;" class="col-md-12 column">
                                 {%if messages %}
@@ -93,8 +93,8 @@
                                         <form class="navbar-form navbar-left" role="search" action="/searchUser/" method="post">
                                             {% csrf_token %}
                                             <div class="form-group">
-                                                <input placeholder="输入用户名搜索" type="text" name="username" class="form-control" />
-                                            </div> <button type="submit" style="margin-left: 10px;" class="btn btn-primary">查询</button><a role="button" class="btn btn-default" style="margin-left: 10px;" href="/management/">重置</a>
+                                                <input placeholder="输入水果名称搜索" type="text" name="username" class="form-control" />
+                                            </div> <button type="submit" style="margin-left: 10px;" class="btn btn-primary">查询</button><a role="button" class="btn btn-default" style="margin-left: 10px;" href="/management/goods/">重置</a>
                                         </form>
                                     </div>
                                 </nav>
@@ -106,45 +106,76 @@
                                             ID
                                         </th>
                                         <th>
-                                            用户名
+                                            水果名称
                                         </th>
                                         <th>
-                                            邮箱
+                                            类别
                                         </th>
                                         <th>
-                                            上次登录时间
+                                            介绍
                                         </th>
                                         <th>
-                                            启用状态
+                                            单价(斤)
                                         </th>
                                         <th>
-                                            操作 <a id="modal-207299" href="#modal-container-207299" role="button" style="font-size: xx-small;margin-left: 75px;" class="btn btn-primary" data-toggle="modal">添加</a><a id="modal-207300" href="#modal-container-207300" role="button" style="font-size: xx-small;margin-left: 5px;" class="btn btn-success" data-toggle="modal">导入</a>
+                                            运费
+                                        </th>
+                                        <th>
+                                            规格
+                                        </th>
+                                        <th>
+                                            销量
+                                        </th>
+                                        <th>
+                                            图片文件
+                                        </th>
+                                        <th>
+                                            <a id="modal-207299" href="#modal-container-207299" role="button" style="font-size: xx-small;" class="btn btn-primary" data-toggle="modal">添加</a><a id="modal-207300" href="#modal-container-207300" role="button" style="font-size: xx-small;margin-left: 5px;" class="btn btn-success" data-toggle="modal">导入</a>
                                         </th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for item in user_data %}
+                                    {% for item in goods_data %}
                                         <tr class="{{ item.style }}" >
                                             <td>
                                                 {{ item.id }}
                                             </td>
                                             <td>
-                                                {{ item.username }}
+                                                <textarea class="form-control" style="background: rgba(255,255,255,0.1);"  rows="2">
+                                                    {{ item.fruit_name }}
+                                                </textarea>
+                                                
                                             </td>
                                             <td>
-                                                {{ item.email }}
+                                                {{ item.fruit_type_id }}
                                             </td>
                                             <td>
-                                                {{ item.last_login }}
+                                                
+                                                <textarea class="form-control" style="background: rgba(255,255,255,0.1);"  rows="2">
+                                                    {{ item.fruit_description }}
+                                                </textarea>
                                             </td>
                                             <td>
-                                                {{ item.is_active }}
+                                                {{ item.fruit_price }}
                                             </td>
                                             <td>
-                                                <button class="btn btn-primary" style="font-size: xx-small;" onclick="close_confirm('/managementUser/disable?id={{ item.id }}')">停用</button>
-                                                <button class="btn btn-default" style="font-size: xx-small;" onclick="open_confirm('/managementUser/enable?id={{ item.id }}')">启用</button>
+                                                {{ item.transportation_price }}
+                                            </td>
+                                            <td>
+                                                {{ item.fruit_weight }}
+                                            </td>
+                                            <td>
+                                                {{ item.Sales }}
+                                            </td>
+                                            <td>
+                                                <textarea class="form-control" style="background: rgba(255,255,255,0.1);"  rows="2">
+                                                    {{ item.fruit_pic_file_name }}
+                                                </textarea>
+                                            </td>
+                                            <td>
+
                                                 <a id="modal-207301" onclick="update_user('{{ item.id}}','{{ item.email }}')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
-                                                <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/managementUser/delete?id={{ item.id }}')" > 删除</button>
+                                                <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/management/goods/delete?id={{ item.id }}')" > 删除</button>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -159,13 +190,13 @@
                                     <ul style="float: right;" class="pagination">
                                         <li class="">
                                             {% if dic1.page_number <= 2 %}
-                                                <a href="/management/user?page_number=1">上一页</a>
+                                                <a href="/management/goods/page?page_number=1">上一页</a>
                                             {% else %}
-                                                <a href="/management/user?page_number={{ dic1.page_number|add:-1 }}">上一页</a>
+                                                <a href="/management/goods/page?page_number={{ dic1.page_number|add:-1 }}">上一页</a>
                                             {% endif %}
                                         </li>
                                         <li >
-                                             <a style="margin-left: 10px;" href="/management/user?page_number={{ dic1.page_number|add:1 }}">下一页</a>
+                                             <a style="margin-left: 10px;" href="/management/goods/page?page_number={{ dic1.page_number|add:1 }}">下一页</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -205,27 +236,52 @@
                             <div class="modal-header">
                                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
                                 <h4 class="modal-title" id="myModalLabel">
-                                    添加用户
+                                    添加商品
                                 </h4>
                             </div>
                             <div class="modal-body">
-                                <form role="form" action="/managementUser/add/" method="post" enctype = "multipart/form-data">
+                                <form role="form" action="/management/goods/add/" method="post" enctype = "multipart/form-data">
                                     {% csrf_token %}
                                     <div class="form-group">
-                                        <label for="username">用户名</label><input type="text" class="form-control" name="username" />
+                                        <label for="fruit_name">水果名称</label><input type="text" class="form-control" name="fruit_name" />
                                     </div>
                                     <div class="form-group">
-                                        <label for="password">密码</label><input type="password" class="form-control" name="password" />
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="email">邮箱</label><input type="email" class="form-control" name="email" />
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="group_id">用户组</label>
-                                        <select name="group_id" class="form-control">
-                                            <option value="1">管理员</option>
-                                            <option value="2">顾客</option>
+                                        <label for="fruit_type_id">水果类别</label>
+                                        <select name="fruit_type_id" class="form-control">
+                                            <option value="1">最新上架</option>
+                                            <option value="2">热销水果</option>
+                                            <option value="3">品质水果</option>
+                                            <option value="4">实惠套餐</option>
+                                            <option value="5">当季水果</option>
+                                            <option value="6">好评最多</option>
+                                            <option value="7">瓜果飘香</option>
+                                            <option value="8">热带水果</option> 
                                         </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fruit_description">描述信息</label>
+                                        <textarea class="form-control" rows="3" name="fruit_description"  ></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fruit_price">单价</label><input type="text" class="form-control" name="fruit_price" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="transportation_price">运费</label><input type="text" class="form-control" name="transportation_price" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="fruit_weight">规格</label><input type="text" value="1kg" class="form-control" name="fruit_weight"  />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="Sales">销量</label><input type="text" class="form-control" name="Sales"  />
+                                    </div>
+                                    <div  class="form-group">
+                                        <label for="fruit_picture1">请上传图片1(必传)</label><input role="button"  type="file" name="fruit_picture1" />
+                                    </div>
+                                    <div  class="form-group">
+                                        <label for="fruit_picture2">请上传图片2(可选)</label><input role="button"  type="file" name="fruit_picture2" />
+                                    </div>
+                                    <div  class="form-group">
+                                        <label for="fruit_picture3">请上传图片3(可选)</label><input role="button"  type="file" name="fruit_picture3" />
                                     </div>
                                     <button type="submit" class="btn btn-default btn-primary">提交</button>
                                 </form>

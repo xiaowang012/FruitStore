@@ -24,99 +24,103 @@
 
                 </div>
                 <h4 style="margin-left: 20px;margin-top: 40px;" >选择收货地址</h4>
-                
-                <!-- 选择收货地址模块 -->
-                <div style="margin-left: 20px;" class="radio">
-                    <label>
-                        <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>收货地址1({{ dic1.address1 }})
-                    </label>
-                </div>
-                <div style="margin-left: 20px;" class="radio">
-                    <label>
-                        <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" >收货地址2({{ dic1.address2 }})
-                    </label>
-                </div>
-                <div style="margin-left: 20px;" class="radio">
-                    <label>
-                        <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">收货地址3({{ dic1.address3 }})
-                    </label>
-                </div>
-                
-                <h4 style="margin-left: 20px;margin-top: 20px;" >订单确认</h4>
-                <!-- 订单金额列表 -->
-                <div class="container">
-                    <div class="row clearfix">
-                        <div  class="col-md-12 column">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th  >
-                                            商品信息
-                                        </th>
-                                        <th>
-                                            单价
-                                        </th>
-                                        <th>
-                                            规格
-                                        </th>
-                                        <th>
-                                            购买数量
-                                        </th>
-                                        <th>
-                                            需付金额
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    
-                                    {% for item in shopping_cart_data %}
-                                        <tr>
-                                            <td style="width: 400px;" >
-                                                <div style="margin-top: 20px;"  class="media">
-                                                    <a href="" class="pull-left"><img src="{{ item.pic_html }}"  class="media-object" alt='' width="100px" height="100px" /></a>
-                                                    <div class="media-body">
-                                                        <h4>品名:&nbsp&nbsp{{ item.fruit_name }}</h4>
-                                                        <p>描述:&nbsp&nbsp{{ item.fruit_description }}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td style="color: red;" >
-                                                {{ item.fruit_price }}元/斤
-                                            </td>
-                                            <td>
-                                                {{ item.fruit_weight }}
-                                            </td>
-                                            <td>
-                                                {{ item.fruit_number }} 
-                                            </td>
-                                            <td style="color: red;" >
-                                                {{ item.fruit_amount }}元   
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
+                <form action="/confirm/order/" method="post" >
+                    {% csrf_token %}
+                    <!-- 选择收货地址模块 -->
+                    <div style="margin-left: 20px;" class="radio">
+                        <label>
+                            <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>收货地址1({{ dic1.address1 }})
+                        </label>
                     </div>
-                </div>
-                <div class="row clearfix">
-                    <div class="col-md-4 column">
+                    <div style="margin-left: 20px;" class="radio">
+                        <label>
+                            <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2" >收货地址2({{ dic1.address2 }})
+                        </label>
                     </div>
-                    <div class="col-md-4 column">
+                    <div style="margin-left: 20px;" class="radio">
+                        <label>
+                            <input type="radio" name="optionsRadios" id="optionsRadios3" value="option3">收货地址3({{ dic1.address3 }})
+                        </label>
                     </div>
-                    <div class="col-md-4 column">
+                    <div style="margin-left: 20px;margin-top: 20px;" class="form-group">
+                        <label for="order_number">订单号码:</label><input style="background: rgba(255,255,255,0.5);width: 200px;" type="text" value="{{ dic1.order_number }}" class="form-control" name="order_number" readonly="readonly" />
+                    </div>
+                    <h4 style="margin-left: 20px;margin-top: 20px;" >订单确认</h4>
+                    <!-- 订单金额列表 -->
+                    <div class="container">
                         <div class="row clearfix">
-                            <div class="col-md-6 column">
-                            </div>
-                            <div class="col-md-6 column">
-                                <p>商品总金额:{{ dic1.total_amount }}元</p>
-                                <p>运费:0.00元</p>
-                                <p>需付金额:</p><h3 style="color: red;" >{{ dic1.total_amount }}元</h3>
-                                <a role="button" style="margin-top: 10px;background-color:crimson;"  class="btn btn-success" href="/pay">付款</a><a style="margin-top: 10px;margin-left: 15px;" role="button" class="btn btn-success" href="/my_shopping_cart/">返回</a>
+                            <div  class="col-md-12 column">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th  >
+                                                商品信息
+                                            </th>
+                                            <th>
+                                                单价
+                                            </th>
+                                            <th>
+                                                规格
+                                            </th>
+                                            <th>
+                                                购买数量
+                                            </th>
+                                            <th>
+                                                需付金额
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        
+                                        {% for item in shopping_cart_data %}
+                                            <tr>
+                                                <td style="width: 400px;" >
+                                                    <div style="margin-top: 20px;"  class="media">
+                                                        <a href="" class="pull-left"><img src="{{ item.pic_html }}"  class="media-object" alt='' width="100px" height="100px" /></a>
+                                                        <div class="media-body">
+                                                            <h4>品名:&nbsp&nbsp{{ item.fruit_name }}</h4>
+                                                            <p>描述:&nbsp&nbsp{{ item.fruit_description }}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td style="color: red;" >
+                                                    {{ item.fruit_price }}元/斤
+                                                </td>
+                                                <td>
+                                                    {{ item.fruit_weight }}
+                                                </td>
+                                                <td>
+                                                    {{ item.fruit_number }} 
+                                                </td>
+                                                <td style="color: red;" >
+                                                    {{ item.fruit_amount }}元   
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
-                </div>
+                    <div class="row clearfix">
+                        <div class="col-md-4 column">
+                        </div>
+                        <div class="col-md-4 column">
+                        </div>
+                        <div class="col-md-4 column">
+                            <div class="row clearfix">
+                                <div class="col-md-6 column">
+                                </div>
+                                <div class="col-md-6 column">
+                                    <p>商品总金额:{{ dic1.total_amount }}元</p>
+                                    <p>运费:0.00元</p>
+                                    <p>需付金额:</p><h3 style="color: red;" >{{ dic1.total_amount }}元</h3>
+                                    <button type="submit" style="margin-top: 10px;background-color:crimson;"  class="btn btn-success" >付款</button><a style="margin-top: 10px;margin-left: 15px;" role="button" class="btn btn-success" href="/my_shopping_cart/">返回</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
                 <nav style="height: 20px;" class="navbar navbar-default navbar-fixed-top" role="navigation">
                     <div style="margin-left: 185px;margin-top: 15px;" class="navbar-header">
                         <p> <a style="margin-left: 10px;color: black;" href="/index/">商城首页</a>&nbsp&nbsp&nbsp&nbsp&nbsp欢迎来到水果商店!<a style="margin-left: 15px;color: black;" href="/login/">点击登录!</a> <a style="margin-left: 15px;color: black;" href="/register/">免费注册!</a> <a style="margin-left: 15px;color: black;" href="/management/">管理入口</a> <img src="/static/imgs/index_user.png" width="20px" height="20px" style="margin-left: 540px;" alt=""><a style="margin-left: 10px;color: black;" href="/userInfo/">{{ dic1.current_user }}</a> <a style="margin-left: 40px; color: black;" href="/logout/">退出</a></p>
