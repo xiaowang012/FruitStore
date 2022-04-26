@@ -709,7 +709,9 @@ def payment_page(request):
         user_info = User.objects.filter(username = current_user).first()
         list_shopping_cart_data = []
         #总金额
-        total_amount = 0.0
+        total_amount = 0.00
+        #总运费
+        total_transportation_price = 0.00
         if user_info:
             customer_id = user_info.id
             #根据customer_id ,is_submit查询数据
@@ -726,9 +728,13 @@ def payment_page(request):
                         fruit_data.pic_html = '/static/imgs/' + picture_file_name
                     
                     #计算单品的需付金额(保留两位小数)
-                    amount = data.fruit_number*2*fruit_data.fruit_price
+                    amount = data.fruit_number*2*fruit_data.fruit_price 
                     fruit_amount = float('%.2f'%amount)
                     total_amount += fruit_amount
+                    #运费
+                    transportation_price = fruit_data.transportation_price
+                    transportation_price = float('%.2f'%transportation_price)
+                    total_transportation_price += transportation_price
 
                     #渲染数据
                     dic_data = {'shopping_cart_id':data.id,'fruit_number':data.fruit_number,'pic_html':fruit_data.pic_html,'fruit_name':fruit_data.fruit_name,\
@@ -754,15 +760,15 @@ def payment_page(request):
             #通过金额判断是否有商品数据，若有数据则生成订单
             # print(total_amount)
             if total_amount != 0.0:
-                
+                total_amount_all = total_amount + total_transportation_price
                 order_number = 'SGSD' + str(time.time()).replace('.','')
-                test1 = models.FruitOrder(id = None,order_number = order_number,customer = customer_id,money = total_amount,pay_status = 0, order_status= 0,address = address1)
+                test1 = models.FruitOrder(id = None,order_number = order_number,customer = customer_id,money = total_amount_all,pay_status = 0, order_status= 0,address = address1)
                 test1.save()
             else:
                 messages.add_message(request,messages.ERROR,' 商品数据不存在!')
                 return redirect('/my_shopping_cart/')
 
-            dic1 = {'current_user':current_user,'address1':address1,'address2':address2,'address3':address3,'total_amount':total_amount,'order_number':order_number}
+            dic1 = {'current_user':current_user,'address1':address1,'address2':address2,'address3':address3,'total_amount':total_amount,'total_amount_all':total_amount_all,'trans_price':total_transportation_price,'order_number':order_number}
             return render(request,'order_balance_page.html',{'shopping_cart_data':list_shopping_cart_data,'dic1':dic1})
         else:
             messages.add_message(request,messages.ERROR,' 数据不存在!')
@@ -776,7 +782,7 @@ def confirm_order(request):
         if form.is_valid():
             order_number = request.POST.get('order_number')
             select_address = request.POST.get( 'optionsRadios')
-            print(order_number,select_address)
+            #print(order_number,select_address)
             if order_number and select_address:
                 order_info = models.FruitOrder.objects.filter(order_number = order_number).first()
                 if order_info:
@@ -1355,7 +1361,7 @@ def permission_management_import_permission(request):
                     #读取第一行数据
                     if ws.nrows != 0:
                         line_1_values = ws.row_values(0)
-                        print(line_1_values)
+                        #print(line_1_values)
                         if line_1_values == ['URL','描述信息','用户组ID']:
                             message_list = []
                             for i in range(1,ws.nrows):
@@ -1880,7 +1886,6 @@ def order_management_send_order_goods(request):
                 messages.add_message(request,messages.ERROR,' 订单不存在!')
         return redirect('/management/order/')
                 
-
 #商品管理
 def goods_management(request):
     current_user = request.user
@@ -1946,7 +1951,9 @@ def goods_management_add_goods(request):
                     #将图片名称加入list
                     picture_list.append(file_name)
                 else:
-                    message1 =' 图片1格式错误!'
+                    message1 =' 图片1格式错误! 仅支持 jpg jpeg png 类型的图片!'
+                    messages .add_message(request,messages.ERROR,message1)
+                    return redirect('/management/goods/')
             else:
                 messages .add_message(request,messages.ERROR,' 图片1不存在! 无法添加商品数据!')
                 return redirect('/management/goods/')
@@ -1964,7 +1971,9 @@ def goods_management_add_goods(request):
                     #将图片名称加入list
                     picture_list.append(file_name2)
                 else:
-                    message1 =' 图片2格式错误!'
+                    message2 =' 图片2格式错误! 仅支持 jpg jpeg png 类型的图片!'
+                    messages .add_message(request,messages.ERROR,message2)
+                    return redirect('/management/goods/')
 
             #判断图片3
             if fruit_picture3:
@@ -1979,7 +1988,9 @@ def goods_management_add_goods(request):
                     #将图片名称加入list
                     picture_list.append(file_name3)
                 else:
-                    message1 =' 图片3格式错误!'
+                    message3 =' 图片3格式错误! 仅支持 jpg jpeg png 类型的图片!'
+                    messages .add_message(request,messages.ERROR,message3)
+                    return redirect('/management/goods/')
             
             #根据接收的图片数更新字段fruit_pic_file_name  如有多张图片使用 ; 分隔
             fruit_pic_file_name = ''
@@ -2004,10 +2015,162 @@ def goods_management_add_goods(request):
             messages.add_message(request,messages.ERROR,errors)
         return redirect('/management/goods/')
 
-
 #商品管理修改商品
 def goods_management_update_goods(request):
-    pass
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementGoodsUpdate (request.POST,request.FILES)
+        if form.is_valid():
+            update_id = request.POST.get('update_id')
+            update_fruit_name = request.POST.get('update_fruit_name')
+            update_fruit_type_id = request.POST.get('update_fruit_type_id')
+            update_fruit_description = request.POST.get('update_fruit_description')
+            update_fruit_price = request.POST.get('update_fruit_price')
+            update_fruit_weight = request.POST.get('update_fruit_weight')
+            update_transportation_price = request.POST.get('update_transportation_price')
+            update_Sales = request.POST.get('update_Sales')
+            update_fruit_picture1 = request.FILES.get('update_fruit_picture1')
+            update_fruit_picture2 = request.FILES.get('update_fruit_picture2')
+            update_fruit_picture3 = request.FILES.get('update_fruit_picture3')
+
+            #打印测试数据
+            # print(update_id)
+            # print(update_fruit_name)
+            # print(update_fruit_type_id)
+            # print(update_fruit_description)
+            # print(update_fruit_price)
+            # print(update_fruit_weight)
+            # print(update_transportation_price)
+            # print(update_Sales)
+            # #print('file1',update_fruit_picture1.name)
+            try:
+                update_id = int(update_id)
+            except:
+                messages.add_message(request,messages.ERROR,' update_id 参数错误!')
+            else:
+                #根据update_id 查询商品
+                fruit_info = models.Fruits.objects.filter(id = update_id).first()
+                #消息列表
+                message_list = []
+                if fruit_info:
+                    #对比各个字段是否一致，不一致则更新
+                    if fruit_info.fruit_name != update_fruit_name:
+                        fruit_info.fruit_name = update_fruit_name
+                        message_list .append(' 水果名称 ')
+
+                    if fruit_info.fruit_type_id != int(update_fruit_type_id):
+                        fruit_info.fruit_type_id = int(update_fruit_type_id)
+                        message_list .append(' 水果类别 ')
+                    
+                    if fruit_info.fruit_description != update_fruit_description:
+                        fruit_info.fruit_description = update_fruit_description
+                        message_list .append(' 描述信息 ')
+
+                    if float(fruit_info.fruit_price) != float(update_fruit_price):
+                        fruit_info.fruit_price = float(update_fruit_price)
+                        message_list .append(' 水果价格 ')
+                    
+                    if fruit_info.fruit_weight != update_fruit_weight:
+                        fruit_info.fruit_weight = update_fruit_weight
+                        message_list .append(' 规格 ')
+                    
+                    if float(fruit_info.transportation_price) != float(update_transportation_price):
+                        fruit_info.transportation_price = float(update_transportation_price)
+                        message_list .append(' 运费 ')
+                    
+                    if fruit_info.Sales != int(update_Sales):
+                        fruit_info.Sales = int(update_Sales)
+                        message_list .append(' 销量 ')
+
+                    #定义图片列表
+                    picture_list = []
+                    #判断是否上传了图片,上传了则更新图片
+                    if update_fruit_picture1:
+                        file_extension = os.path.splitext(update_fruit_picture1.name)[-1]
+                        if file_extension in ['.jpg','.jpeg','.png']:
+                            file_name =  str(time.time()) + file_extension
+                            picture_file_dir = os.getcwd() + os.sep + 'static' +os.sep + 'imgs' + os.sep + file_name
+                            #保存图片文件到静态资源目录\static\imgs
+                            with open(picture_file_dir,'wb') as f:
+                                for chunk in update_fruit_picture1.chunks():
+                                    f.write(chunk)
+                            #将图片名称加入list
+                            picture_list.append(file_name)
+                            message_list.append(' 图片1 ')
+                        else:
+                            message1 =' 图片1格式错误! 仅支持 jpg jpeg png 类型的图片!'
+                            messages .add_message(request,messages.ERROR,message1)
+                            return redirect('/management/goods/')
+                    
+                    #判断图片2
+                    if update_fruit_picture2:
+                        file_extension2 = os.path.splitext(update_fruit_picture2.name)[-1]
+                        if file_extension2 in ['.jpg','.jpeg','.png']:
+                            file_name2 =  str(time.time()) + file_extension2
+                            picture_file_dir2 = os.getcwd() + os.sep + 'static' +os.sep + 'imgs' + os.sep + file_name2
+                            #保存图片文件到静态资源目录\static\imgs
+                            with open(picture_file_dir2,'wb') as f:
+                                for chunk in update_fruit_picture2.chunks():
+                                    f.write(chunk)
+                            #将图片名称加入list
+                            picture_list.append(file_name2)
+                            message_list.append(' 图片2 ')
+                        else:
+                            message2 =' 图片2格式错误! 仅支持 jpg jpeg png 类型的图片!'
+                            messages .add_message(request,messages.ERROR,message2)
+                            return redirect('/management/goods/')
+
+                    #判断图片3
+                    if update_fruit_picture3:
+                        file_extension3 = os.path.splitext(update_fruit_picture3.name)[-1]
+                        if file_extension3 in ['.jpg','.jpeg','.png']:
+                            file_name3 =  str(time.time()) + file_extension3
+                            picture_file_dir3 = os.getcwd() + os.sep + 'static' +os.sep + 'imgs' + os.sep + file_name3
+                            #保存图片文件到静态资源目录\static\imgs
+                            with open(picture_file_dir3,'wb') as f:
+                                for chunk in update_fruit_picture3.chunks():
+                                    f.write(chunk)
+                            #将图片名称加入list
+                            picture_list.append(file_name3)
+                            message_list.append(' 图片3 ')
+                        else:
+                            message3 =' 图片3格式错误! 仅支持 jpg jpeg png 类型的图片!'
+                            messages .add_message(request,messages.ERROR,message3)
+                            return redirect('/management/goods/')
+
+                    #根据接收的图片数更新字段fruit_pic_file_name  如有多张图片使用 ; 分隔
+                    fruit_pic_file_name = ''
+                    if len(picture_list) == 1:
+                        fruit_pic_file_name = picture_list[0]
+                        fruit_info.fruit_pic_file_name = fruit_pic_file_name
+                    elif len(picture_list) > 1:
+                        for j in picture_list:
+                            fruit_pic_file_name += j + ';'
+                        #去掉最后一个分号
+                        fruit_pic_file_name = fruit_pic_file_name.rstrip(';')
+                        fruit_info.fruit_pic_file_name = fruit_pic_file_name
+                    else:
+                        pass
+
+                    #保存
+                    fruit_info.save()
+                    
+                    #消息提示
+                    all_msg = ''
+                    for msg in message_list:
+                        all_msg += msg
+                    messages .add_message(request,messages.SUCCESS,'修改字段:  ' + all_msg + ' 成功!')
+                    
+                else:
+                    messages.add_message(request,messages.ERROR,' 商品不存在! ')
+                return redirect('/management/goods/')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request,messages.ERROR,errors)
+            return redirect('/management/goods/')
 
 #商品管理删除商品
 def goods_management_delete_goods(request):
@@ -2030,31 +2193,163 @@ def goods_management_delete_goods(request):
 
 #商品管理查询商品
 def goods_management_search_goods(request):
-    pass
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementGoodsSearch(request.POST)
+        if form.is_valid():
+            fruit_name = request.POST.get('fruit_name')
+            if fruit_name:
+                #模糊查询水果
+                fruits_info = models.Fruits.objects.filter(fruit_name__contains = fruit_name).order_by('-add_fruit_time')[0:10]
+                for i in fruits_info:
+                    #给表格加style
+                    i.style = random.choice(['error','info','success','warning']) 
+                #数据为空给个消息提示
+                if len(fruits_info) == 0:
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的商品!')
+                    
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':1,'fruit_name':fruit_name}
+                return render(request,'management_goods_search.html',{'form':form,'dic1':dic1,'goods_data':fruits_info})
+            else:
+                messages.add_message(request,messages.ERROR,' fruit_name 参数错误!')
+                return redirect('/management/goods/')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+            return redirect('/management/goods/')
 
 #商品管理查询商品翻页
 def goods_management_search_goods_page(request):
-    pass
+    current_user = request.user
+    if request.method == 'GET':
+        fruit_name = request.GET.get('name')
+        page_number = request.GET.get('page_number')
+        if fruit_name:
+            try:
+                page_number = int(page_number)
+            except:
+                messages.add_message(request,messages.ERROR,' page_number 参数错误!')
+            else:
+                #根据页码限制返回数据
+                search_start_num = (page_number-1)*10
+                search_end_num = page_number*10
+                #查询商品数据
+                goods_info = models.Fruits.objects.filter(fruit_name__contains = fruit_name).order_by('-add_fruit_time')[search_start_num:search_end_num]
+                for j in goods_info:
+                    #给表格加style
+                    j.style = random.choice(['error','info','success','warning'])
+                if len(goods_info) == 0:
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的商品!')
+                    
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':page_number,'fruit_name':fruit_name}
+                return render(request,'management_goods_search.html',{'dic1':dic1,'goods_data':goods_info})
+        else:
+            messages.add_message(request,messages.ERROR,' fruit_name 参数错误!')
+            return redirect('/management/goods/')
 
 #商品管理分类查询商品
 def goods_management_search_goods_by_fruit_type(request):
-    pass
+    current_user = request.user
+    if request.method == 'GET':
+        fruit_type_id = request.GET.get('code')
+        try:
+            fruit_type_id = int(fruit_type_id)
+        except:
+            messages.add_message(request,messages.ERROR,' 错误! 参数错误!')
+        else:
+            #根据根据fruit_type_id水果
+            fruits_res = models.Fruits.objects.filter(fruit_type_id = fruit_type_id)[0:10]
+            for i in fruits_res:
+                #给表格加style
+                i.style = random.choice(['error','info','success','warning']) 
+                
+            #数据为空给个消息提示
+            if len(fruits_res) == 0:
+                messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的商品!')
+            #渲染页面
+            dic1 = {'current_user':current_user,'page_number':1,'fruit_type_id':fruit_type_id}
+            return render(request,'management_goods_type.html',{'dic1':dic1,'goods_data':fruits_res})
 
 #商品管理分类查询商品翻页
 def goods_management_search_goods_by_fruit_type_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        fruit_type_id = request.GET.get('code')
+        page_number = request.GET.get('page_number')
+        try:
+            fruit_type_id = int(fruit_type_id)
+            page_number = int(page_number)
+        except:
+            messages.add_message(request,messages.ERROR,' 错误! 参数错误!')
+        else:
+            #根据根据fruit_type_id 和页码查询不同的水果
+            search_start_num = (page_number-1)*10
+            search_end_num = page_number*10
+            fruits_res = models.Fruits.objects.filter(fruit_type_id = fruit_type_id)[search_start_num:search_end_num]
+            for i in fruits_res:
+                i.style = random.choice(['error','info','success','warning'])   
+            #数据为空给个消息提示
+            if len(fruits_res) == 0:
+                messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的商品!')
+            #渲染页面
+            dic1 = {'current_user':current_user,'page_number':page_number,'fruit_type_id':fruit_type_id}
+            return render(request,'management_goods_type.html',{'dic1':dic1,'goods_data':fruits_res})
+
+#角色管理
+def role_management(request):
+    current_user = request.user
+    if request.method == 'GET':
+        #查询用户组数据
+        group_info = Group.objects.all()[0:10]
+        for j in group_info:
+            #给表格加style
+            j.style = random.choice(['error','info','success','warning']) 
+    dic1 = {'current_user':current_user,'page_number':1}
+    return render(request,'management_group.html',{'dic1':dic1,'group_data':group_info})
+
+#角色管理翻页
+def role_management_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        page_number = request.GET.get('page_number')
+        try:
+            page_number = int(page_number)
+        except:
+            messages.add_message(request,messages.ERROR,' 错误! 参数错误!')
+            return redirect('/management/role/')
+        else:
+            #根据根据页码查询group数据
+            search_start_num = (page_number-1)*10
+            search_end_num = page_number*10
+            group_info = Group.objects.all()[search_start_num:search_end_num]
+            for i in group_info:
+                i.style = random.choice(['error','info','success','warning'])   
+            #数据为空给个消息提示
+            if len(group_info) == 0:
+                messages.add_message(request,messages.ERROR,' 未查询到任何满足条件角色!')
+            #渲染页面
+            dic1 = {'current_user':current_user,'page_number':page_number}
+            return render(request,'management_group.html',{'dic1':dic1,'group_data':group_info})
+
+#角色管理查询角色
+def role_management_search_role(request):
+    current_user = request.user
     pass
 
-#商品管理导入商品
-def goods_management_import_goods(request):
+#角色管理查询角色翻页
+def role_management_search_role_page(request):
+    current_user = request.user
     pass
 
 
 
 
-#账目管理
-def account_management(request):
-    pass
 
-#退货管理
+#发货管理
 def returngoods_management(request):
     pass
