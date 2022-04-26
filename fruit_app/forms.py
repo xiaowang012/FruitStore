@@ -151,3 +151,21 @@ class ManagementGoodsAdd(forms.Form):
     fruit_picture1 = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"图片1不能为空!","empty":"不允许上传空文件!"})
     fruit_picture2 = forms.FileField(required = False,allow_empty_file = False,error_messages={"empty":"图片2不允许上传空文件!"})
     fruit_picture3 = forms.FileField(required = False,allow_empty_file = False,error_messages={"empty":"图片3不允许上传空文件!"})
+
+#后台管理商品管理修改商品表单
+class ManagementGoodsUpdate(forms.Form):
+    update_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"id不能为空!","min_length":"id长度不能小于1!","max_length":"id长度不能大于50!"})
+    update_fruit_name = forms.CharField(min_length=1,max_length=50,error_messages={"required":"商品名称不能为空!","min_length":"商品名称长度不能小于1!","max_length":"商品名称长度不能大于50!"})
+    update_fruit_type_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"商品类型不能为空!","min_length":"商品类型长度不能小于1!","max_length":"商品类型长度不能大于50!"})
+    update_fruit_description = forms.CharField(min_length=1,max_length=200,error_messages={"required":"商品描述不能为空!","min_length":"商品描述长度不能小于1!","max_length":"商品描述长度不能大于200!"})
+    update_fruit_price = forms.DecimalField(max_digits=8,decimal_places=2,error_messages={"required":"商品价格不允许为空!","max_digits":"商品价格长度超出8位!","decimal_places":"商品价格小数点位数超出2位!"})
+    update_fruit_weight = forms.CharField(min_length=1,max_length=100,error_messages={"required":"规格不能为空!","min_length":"规格长度不能小于1!","max_length":"规格长度不能大于100!"})
+    update_transportation_price = forms.DecimalField(max_digits=8,decimal_places=2,error_messages={"required":"运输价格不允许为空!","max_digits":"运输价格长度超出8位!","decimal_places":"运输价格小数点位数超出2位!"})
+    update_Sales = forms.CharField(min_length=1,max_length=100,error_messages={"required":"销量不能为空!","min_length":"销量长度不能小于1!","max_length":"销量长度不能大于100!"})
+    update_fruit_picture1 = forms.FileField(required = False,allow_empty_file = False,error_messages={"empty":"不允许上传空文件!"})
+    update_fruit_picture2 = forms.FileField(required = False,allow_empty_file = False,error_messages={"empty":"图片2不允许上传空文件!"})
+    update_fruit_picture3 = forms.FileField(required = False,allow_empty_file = False,error_messages={"empty":"图片3不允许上传空文件!"})
+
+#后台管理商品管理查询商品信息(水果)
+class ManagementGoodsSearch(forms.Form):
+    fruit_name = forms.CharField(min_length=1,max_length=100,error_messages={"required":"商品名称不能为空!","min_length":"商品名长度不能小于1!","max_length":"商品名长度不能大于100!"})
