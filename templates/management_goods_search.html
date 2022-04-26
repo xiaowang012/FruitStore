@@ -75,7 +75,7 @@
                                     </li>
                                     <li>
                                         <a href="/management/accesspolicy" >访问策略</a>
-                                    </li>   
+                                    </li>  
                                 </ul>
                             </div>
                             <div style="margin-top: 20px;margin-left: -10px;" class="col-md-12 column">
@@ -210,13 +210,13 @@
                                     <ul style="float: right;" class="pagination">
                                         <li class="">
                                             {% if dic1.page_number <= 2 %}
-                                                <a href="/management/goods/page?page_number=1">上一页</a>
+                                                <a href="/management/goods/search/page?name={{ dic1.fruit_name }}&page_number=1">上一页</a>
                                             {% else %}
-                                                <a href="/management/goods/page?page_number={{ dic1.page_number|add:-1 }}">上一页</a>
+                                                <a href="/management/goods/search/page?name={{ dic1.fruit_name }}&page_number={{ dic1.page_number|add:-1 }}">上一页</a>
                                             {% endif %}
                                         </li>
                                         <li >
-                                             <a style="margin-left: 10px;" href="/management/goods/page?page_number={{ dic1.page_number|add:1 }}">下一页</a>
+                                             <a style="margin-left: 10px;" href="/management/goods/search/page?name={{ dic1.fruit_name }}&page_number={{ dic1.page_number|add:1 }}">下一页</a>
                                         </li>
                                     </ul>
                                 </div>

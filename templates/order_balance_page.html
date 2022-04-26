@@ -113,8 +113,8 @@
                                 </div>
                                 <div class="col-md-6 column">
                                     <p>商品总金额:{{ dic1.total_amount }}元</p>
-                                    <p>运费:0.00元</p>
-                                    <p>需付金额:</p><h3 style="color: red;" >{{ dic1.total_amount }}元</h3>
+                                    <p>运费:{{ dic1.trans_price }}元</p>
+                                    <p>需付金额:</p><h3 style="color: red;" >{{ dic1.total_amount_all }}元</h3>
                                     <button type="submit" style="margin-top: 10px;background-color:crimson;"  class="btn btn-success" >付款</button><a style="margin-top: 10px;margin-left: 15px;" role="button" class="btn btn-success" href="/my_shopping_cart/">返回</a>
                                 </div>
                             </div>

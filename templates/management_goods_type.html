@@ -210,13 +210,13 @@
                                     <ul style="float: right;" class="pagination">
                                         <li class="">
                                             {% if dic1.page_number <= 2 %}
-                                                <a href="/management/goods/page?page_number=1">上一页</a>
+                                                <a href="/management/goods/search/type/page?code={{ dic1.fruit_type_id }}&page_number=1">上一页</a>
                                             {% else %}
-                                                <a href="/management/goods/page?page_number={{ dic1.page_number|add:-1 }}">上一页</a>
+                                                <a href="/management/goods/search/type/page?code={{ dic1.fruit_type_id }}&page_number={{ dic1.page_number|add:-1 }}">上一页</a>
                                             {% endif %}
                                         </li>
                                         <li >
-                                             <a style="margin-left: 10px;" href="/management/goods/page?page_number={{ dic1.page_number|add:1 }}">下一页</a>
+                                             <a style="margin-left: 10px;" href="/management/goods/search/type/page?code={{ dic1.fruit_type_id }}&page_number={{ dic1.page_number|add:1 }}">下一页</a>
                                         </li>
                                     </ul>
                                 </div>
