@@ -79,13 +79,16 @@ urlpatterns = [
     path('management/goods/',views.goods_management),
     path('management/goods/page',views.goods_management_page),
     path('management/goods/add/',views.goods_management_add_goods),
-    path('management/goods/update',views.goods_management_update_goods),
+    path('management/goods/update/',views.goods_management_update_goods),
     path('management/goods/delete',views.goods_management_delete_goods),
-    path('management/goods/import/',views.goods_management_import_goods),
     path('management/goods/search/',views.goods_management_search_goods),
     path('management/goods/search/page',views.goods_management_search_goods_page),
     path('management/goods/search/type',views.goods_management_search_goods_by_fruit_type),
     path('management/goods/search/type/page',views.goods_management_search_goods_by_fruit_type_page),
+    path('management/role/',views.role_management),
+    path('management/role/page',views.role_management_page),
+    path('management/role/search/',views.role_management_search_role),
+    path('management/role/search/page',views.role_management_search_role_page),
 
 ]
 
