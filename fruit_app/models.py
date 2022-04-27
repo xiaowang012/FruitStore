@@ -80,4 +80,11 @@ class RoutePermission(models.Model):
     description = CharField(max_length = 100,default = '')
     add_route_permission_time = DateTimeField(default = timezone.now)
 
-    
+#发货信息表
+class Delivery(models.Model):
+    id = AutoField(primary_key = True)
+    order_number = CharField(max_length = 100,default = '')
+    logistics_company = IntegerField(default = 0)
+    logistics_number = CharField(max_length = 100,default = '')
+    commodity_status = IntegerField(default = 0)
+    delivery_time = DateTimeField(default = timezone.now)
