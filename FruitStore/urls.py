@@ -89,6 +89,17 @@ urlpatterns = [
     path('management/role/page',views.role_management_page),
     path('management/role/search/',views.role_management_search_role),
     path('management/role/search/page',views.role_management_search_role_page),
+    path('management/role/add/',views.role_management_add_role),
+    path('management/role/update/',views.role_management_update_role),
+    path('management/role/delete',views.role_management_delete_role),
+    path('management/logistics/',views.delivery_management),
+    path('management/logistics/page',views.delivery_management_page),
+    path('management/logistics/add/',views.delivery_management_add_delivery),
+    path('management/logistics/update/',views.delivery_management_update_delivery),
+    path('management/logistics/delete',views.delivery_management_delete_delivery),
+    path('management/logistics/import/',views.delivery_management_import_delivery),
+    path('management/logistics/search/',views.delivery_management_search_delivery),
+    path('management/logistics/search/page',views.delivery_management_search_delivery_page),
 
 ]
 
