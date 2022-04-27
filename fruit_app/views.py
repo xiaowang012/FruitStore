@@ -2174,7 +2174,6 @@ def goods_management_update_goods(request):
 
 #商品管理删除商品
 def goods_management_delete_goods(request):
-    current_user = request.user
     if request.method == 'GET':
         delete_goods_id = request.GET.get('id')
         try:
@@ -2339,17 +2338,311 @@ def role_management_page(request):
 #角色管理查询角色
 def role_management_search_role(request):
     current_user = request.user
-    pass
+    if request.method == 'POST':
+        form = forms.ManagementRoleSearch(request.POST)
+        if form.is_valid():
+            role_name = request.POST.get('role_name')
+            print(role_name)
+            if role_name:
+                #查询角色信息
+                role_info = Group.objects.filter(name__contains = role_name)[0:10]
+                for j in role_info:
+                    j.style = random.choice(['error','info','success','warning'])
+                if len(role_info) == 0:
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件角色!')
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':1,'role_name':role_name}
+                return render(request,'management_group_search.html',{'dic1':dic1,'group_data':role_info})
+            else:
+                messages.add_message(request,messages.ERROR,' 未查询到任何满足条件角色!')
+                return redirect('/management/role/')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+            return redirect('/management/role/')
+
 
 #角色管理查询角色翻页
 def role_management_search_role_page(request):
     current_user = request.user
-    pass
+    if request.method == 'GET':
+        role_name = request.GET.get('role_name')
+        page_number = request.GET.get('page_number')
+        if role_name:
+            try:
+                page_number = int(page_number)
+            except:
+                messages.add_message(request,messages.ERROR,' 错误! 参数错误!')
+            else:
+                #根据根据role_name和页码查询角色信息
+                search_start_num = (page_number-1)*10
+                search_end_num = page_number*10
+                role_info = Group.objects.filter(name__contains = role_name)[search_start_num:search_end_num]
+                for i in role_info:
+                    i.style = random.choice(['error','info','success','warning'])   
+                #数据为空给个消息提示
+                if len(role_info) == 0:
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的商品!')
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':page_number,'role_name':role_name}
+                return render(request,'management_group_search.html',{'dic1':dic1,'group_data':role_info})
+        else:
+            messages.add_message(request,messages.ERROR,'  role_name参数错误!')
+            return redirect('/management/role/')
+
+#角色管理添加角色
+def role_management_add_role(request):
+    if request.method == 'POST':
+        form = forms.ManagementRoleAdd(request.POST)
+        if form.is_valid():
+            add_role_name = request.POST.get('add_role_name')
+            if add_role_name:
+                #查重
+                if not Group.objects.filter(name = add_role_name) .first():
+                    #没有重复的就添加
+                    test1 = Group(id = None,name = add_role_name)
+                    test1.save()
+                    messages.add_message(request,messages.SUCCESS,' 添加角色: ' + add_role_name + ' 成功!')
+                else:
+                    messages.add_message(request,messages.ERROR,' 添加角色: ' + add_role_name + ' 失败! 此角色已存在! 请不要重复添加!')
+            else:
+                messages.add_message(request,messages.ERROR,' add_role_name参数错误!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+        return redirect('/management/role/')
 
 
+#角色管理修改角色
+def role_management_update_role(request):
+    if request.method == 'POST':
+        form = forms.ManagementRoleUpdate(request.POST)
+        if form.is_valid():
+            update_id = request.POST.get('update_id')
+            update_add_role_name = request.POST.get('update_add_role_name')
+            if update_add_role_name:
+                try:
+                    update_id = int(update_id)
+                except:
+                    messages.add_message(request,messages.ERROR,' update_id 参数错误!')
+                else:
+                    role_info = Group.objects.filter(id = update_id) .first()
+                    if role_info:
+                        #查重
+                        if not Group.objects.filter(name = update_add_role_name) .first():
+                            #没有重复的就添加
+                            old_name = role_info.name
+                            role_info.name = update_add_role_name
+                            role_info.save()
+                            messages.add_message(request,messages.SUCCESS,' 更新角色: ' + update_add_role_name +' (' + old_name + ')'+ ' 成功!')
+                        else:
+                            messages.add_message(request,messages.ERROR,' 更新角色: ' + update_add_role_name + ' 失败! 此角色名已被占用! 无法更新!')
+                    else:
+                        messages.add_message(request,messages.ERROR,' 错误! 角色不存在!')
+            else:
+                messages.add_message(request,messages.ERROR,' update_add_role_name参数错误!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+        return redirect('/management/role/')
 
-
+#角色管理删除角色
+def role_management_delete_role(request):
+    if request.method == 'GET':
+        delete_role_id = request.GET.get('id')
+        try:
+            delete_role_id = int(delete_role_id)
+        except:
+            messages.add_message(request,messages.ERROR,' delete_role_id参数错误!')
+        else:
+            #查询角色
+            role_info = Group.objects.filter(id = delete_role_id) .first()
+            if role_info:
+                role_name = role_info.name
+                role_info.delete()
+                messages.add_message(request,messages.SUCCESS,' 删除角色: ' + role_name + ' 成功!')
+            else:
+                messages.add_message(request,messages.ERROR,' 角色不存在! 删除失败!')
+        return redirect('/management/role/')
 
 #发货管理
-def returngoods_management(request):
+def delivery_management(request):
+    current_user = request.user
+    if request.method == 'GET':
+        logistics_info = models.Delivery.objects.all().order_by('-delivery_time')[0:10]
+        for j in logistics_info:
+            j.style = random.choice(['error','info','success','warning'])   
+            delivery_time = j.delivery_time
+            j.delivery_time = delivery_time.strftime("%Y-%m-%d %H:%M:%S")
+        #数据为空给个消息提示
+        if len(logistics_info) == 0:
+            messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的物流信息!')
+        dic1 = {'current_user':current_user,'page_number':1}
+        return render(request,'management_logistics.html',{'dic1':dic1,'logistics_data':logistics_info})
+
+#发货管理翻页
+def delivery_management_page(request):
+    current_user = request.user
+    if request.method == 'GET':
+        page_number = request.GET.get('page_number')
+        try:
+            page_number = int(page_number)
+        except:
+            messages.add_message(request,messages.ERROR,' page_number参数错误!')
+        else:
+            #根据页码查询
+            search_start_num = (page_number-1)*10
+            search_end_num = page_number*10
+            logistics_info = models.Delivery.objects.all().order_by('-delivery_time')[search_start_num:search_end_num]
+            for j in logistics_info:
+                j.style = random.choice(['error','info','success','warning'])   
+                delivery_time = j.delivery_time
+                j.delivery_time = delivery_time.strftime("%Y-%m-%d %H:%M:%S")
+            #数据为空给个消息提示
+            if len(logistics_info) == 0:
+                messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的物流信息!')
+            dic1 = {'current_user':current_user,'page_number':page_number}
+            return render(request,'management_logistics.html',{'dic1':dic1,'logistics_data':logistics_info})
+
+#发货管理添加货物
+def delivery_management_add_delivery(request):
+    if request.method == 'POST':
+        form = forms.ManagementLogisticsInfoAdd(request.POST)
+        if form.is_valid():
+            order_number = request.POST.get('order_number')
+            logistics_company = request.POST.get('logistics_company')
+            logistics_number = request.POST.get('logistics_number')
+            commodity_status = request.POST.get('commodity_status')
+            if order_number and logistics_company and logistics_number and commodity_status:
+                try:
+                    logistics_company = int(logistics_company)
+                    commodity_status = int(commodity_status)
+                except:
+                    messages.add_message(request,messages.ERROR,' logistics_company commodity_status 参数错误!')
+                else:
+                    #查询订单号是否存在
+                    if models.FruitOrder.objects.filter(order_number = order_number).first():
+                        #货物表订单号查重
+                        if not models.Delivery.objects.filter(order_number = order_number).first():
+                            #加入数据库
+                            test1 = models.Delivery(id = None,order_number = order_number,logistics_company = logistics_company,\
+                                logistics_number = logistics_number,commodity_status = commodity_status)
+                            test1.save()
+                            messages.add_message(request,messages.SUCCESS,' 添加货物成功!')
+                        else:
+                            messages.add_message(request,messages.ERROR,' 订单号: ' + order_number +' 已添加! 无法重复添加!')
+                    else:
+                        messages.add_message(request,messages.ERROR,' 订单号无效! 无法添加!')
+            else:
+                messages.add_message(request,messages.ERROR,' 参数错误!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+        return redirect('/management/logistics/')
+
+
+#发货管理修改货物
+def delivery_management_update_delivery(request):
+    if request.method == 'POST':
+        form = forms.ManagementLogisticsInfoUpdate(request.POST)
+        if form.is_valid():
+            update_id = request.POST.get('update_id')
+            update_order_number = request.POST.get('update_order_number')
+            update_logistics_company = request.POST.get('update_logistics_company')
+            update_logistics_number = request.POST.get('update_logistics_number')
+            update_commodity_status = request.POST.get('update_commodity_status')
+            if update_id and update_order_number and update_logistics_company and update_logistics_number and update_commodity_status:
+                try:
+                    update_id = int(update_id)
+                    update_logistics_company = int(update_logistics_company )
+                    update_commodity_status = int(update_commodity_status)
+                except:
+                    messages.add_message(request,messages.ERROR,' id logistics_company commodity_status 参数错误!')
+                else:
+                    delivery_info = models.Delivery.objects.filter(id = update_id).first()
+                    if delivery_info:
+                        message_list = []
+                        if delivery_info.order_number != update_order_number:
+                            #查询订单号是否存在
+                            if models.FruitOrder.objects.filter(order_number = update_order_number).first():
+                                #货物表订单号查重
+                                if not models.Delivery.objects.filter(order_number = update_order_number).first():
+                                    delivery_info.order_number = update_order_number
+                                    message_list.append(' 订单号 ')
+                                else:
+                                    messages.add_message(request,messages.ERROR,' 更新订单号: ' + update_order_number +' 失败! 该订单号已存在!')        
+                            else:
+                                messages.add_message(request,messages.ERROR,' 订单号无效! 无法更新!')
+    
+                        if delivery_info.logistics_company != update_logistics_company:
+                            delivery_info.logistics_company = update_logistics_company
+                            message_list.append(' 物流公司 ')
+
+                        if delivery_info.logistics_number != update_logistics_number:
+                            delivery_info.logistics_number = update_logistics_number
+                            message_list.append(' 物流编号 ')
+
+                        if delivery_info.commodity_status != update_commodity_status:
+                            delivery_info.commodity_status = update_commodity_status
+                            message_list.append(' 货物状态 ')
+                        
+                        #保存
+                        delivery_info.save()
+                        all_msg = ''
+                        for msg in message_list:
+                            all_msg += msg
+                        messages.add_message(request,messages.SUCCESS,' 更修字段: ' + all_msg + ' 成功!')
+                    else:
+                        messages.add_message(request,messages.ERROR,'  货物不存在!')
+            else:
+                messages.add_message(request,messages.ERROR,'  参数错误!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+        return redirect('/management/logistics/')
+
+
+#发货管理删除货物
+def delivery_management_delete_delivery(request):
+    if request.method == 'GET':
+        delete_delivery_id = request.GET.get('id')
+        try:
+            delete_delivery_id = int(delete_delivery_id)
+        except:
+            messages.add_message(request,messages.ERROR,'  delete_delivery_id 参数错误!')
+        else:
+            delivery_info = models.Delivery.objects.filter(id = delete_delivery_id ).first()
+            if delivery_info:
+                delivery_info.delete()
+                messages.add_message(request,messages.SUCCESS,'  删除成功!')
+            else:
+                messages.add_message(request,messages.ERROR,'  删除失败! 货物不存在')
+        return redirect('/management/logistics/')
+      
+
+#发货管理导入货物
+def delivery_management_import_delivery(request):
+    pass
+
+#发货管理查询货物
+def delivery_management_search_delivery(request):
+    pass
+
+#发货管理查询货物翻页
+def delivery_management_search_delivery_page(request):
     pass
