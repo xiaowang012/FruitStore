@@ -169,3 +169,36 @@ class ManagementGoodsUpdate(forms.Form):
 #后台管理商品管理查询商品信息(水果)
 class ManagementGoodsSearch(forms.Form):
     fruit_name = forms.CharField(min_length=1,max_length=100,error_messages={"required":"商品名称不能为空!","min_length":"商品名长度不能小于1!","max_length":"商品名长度不能大于100!"})
+
+#后台管理角色管理查询角色信息
+class ManagementRoleSearch(forms.Form):
+    role_name = forms.CharField(min_length=1,max_length=100,error_messages={"required":"角色名称不能为空!","min_length":"角色名长度不能小于1!","max_length":"角色名长度不能大于100!"})
+
+#后台管理角色管理添加角色信息
+class ManagementRoleAdd(forms.Form):
+    add_role_name = forms.CharField(min_length=1,max_length=100,error_messages={"required":"角色名称不能为空!","min_length":"角色名长度不能小于1!","max_length":"角色名长度不能大于100!"})
+
+#后台管理角色管理修改角色信息
+class ManagementRoleUpdate(forms.Form):
+    update_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"id不能为空!","min_length":"id长度不能小于1!","max_length":"id长度不能大于50!"})
+    update_add_role_name = forms.CharField(min_length=1,max_length=100,error_messages={"required":"角色名称不能为空!","min_length":"角色名长度不能小于1!","max_length":"角色名长度不能大于100!"})
+
+
+#后台管理角色管理批量导入角色表单
+class ManagementRoleImport(forms.Form):
+    role_file = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
+
+#后台管理发货管理添加物流信息表单
+class ManagementLogisticsInfoAdd(forms.Form):
+    order_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单号码不能为空!","min_length":"订单号码长度不能小于1!","max_length":"订单号码长度不能大于100!"})
+    logistics_company = forms.CharField(min_length=1,max_length=100,error_messages={"required":"物流公司不能为空!","min_length":"物流公司长度不能小于1!","max_length":"物流公司长度不能大于100!"})
+    logistics_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"物流编号不能为空!","min_length":"物流编号长度不能小于1!","max_length":"物流编号长度不能大于100!"})
+    commodity_status = forms.CharField(min_length=1,max_length=100,error_messages={"required":"物流状态不能为空!","min_length":"物流状态长度不能小于1!","max_length":"物流状态长度不能大于100!"})
+
+#后台管理发货管理修改物流信息表单
+class ManagementLogisticsInfoUpdate(forms.Form):
+    update_id = forms.CharField(min_length=1,max_length=50,error_messages={"required":"id不能为空!","min_length":"id长度不能小于1!","max_length":"id长度不能大于50!"})
+    update_order_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单号码不能为空!","min_length":"订单号码长度不能小于1!","max_length":"订单号码长度不能大于100!"})
+    update_logistics_company = forms.CharField(min_length=1,max_length=100,error_messages={"required":"物流公司不能为空!","min_length":"物流公司长度不能小于1!","max_length":"物流公司长度不能大于100!"})
+    update_logistics_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"物流编号不能为空!","min_length":"物流编号长度不能小于1!","max_length":"物流编号长度不能大于100!"})
+    update_commodity_status = forms.CharField(min_length=1,max_length=100,error_messages={"required":"物流状态不能为空!","min_length":"物流状态长度不能小于1!","max_length":"物流状态长度不能大于100!"})
