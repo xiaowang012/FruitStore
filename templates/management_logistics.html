@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>水果商城-后台管理</title>
+    <link rel="icon" href="/static/imgs/apple.png" type="image/x-icon"> 
+	<link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">  
+	<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+        function delete_confirm(url)
+        {
+        var r=confirm("您确定要删除吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function open_confirm(url)
+        {
+        var r=confirm("您确定要启用此账号吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function close_confirm(url)
+        {
+        var r=confirm("您确定要停用此账号吗?")
+          if(r){window.location.href=url
+          }
+        }
+        function update_delivery(id,order_number,logistics_company,logistics_number,commodity_status) {
+        $( '#update_id').val(id);
+        $( '#update_order_number').val(order_number);
+        $( '#update_logistics_company').val(logistics_company);
+        $( '#update_logistics_number').val(logistics_number);
+        $( '#update_commodity_status').val(commodity_status);
+        }
+       
+    </script>
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <div class="row clearfix">
+                    <div class="col-md-2 column">
+                        <img style="margin-top: 70px;" alt="" height="60px" width="220px" src="/static/imgs/management_head.png" />
+                    </div>
+                    <div class="col-md-6 column">
+                       
+                    </div>
+                </div>
+                <div class="container">
+                    <div class="row clearfix">
+                        <div class="col-md-12 column">
+                            <div style="margin-top: 20px;" class="tabbable" id="tabs-577358">
+                                <ul class="nav nav-tabs">
+                                    <li  >
+                                        <a href="/management/" >用户管理</a>
+                                    </li>
+                                    <li  >
+                                        <a href="/management/permission/">权限管理</a>
+                                    </li>
+                                    <li  >
+                                       <a href="/management/goods/" >商品管理</a>
+                                    </li>
+                                    <li  >
+                                       <a href="/management/order/" >订单管理</a>
+                                    </li>
+                                    <li>
+                                        <a href="/management/role/" >角色管理</a>
+                                    </li>
+                                    <li class="active" >
+                                        <a href="/management/logistics/" >发货管理</a>
+                                    </li>
+                                    <li>
+                                        <a href="/management/accesspolicy" >访问策略</a>
+                                    </li>  
+                                </ul>
+                            </div>
+                            <div style="margin-top: 20px;margin-left: -10px;" class="col-md-12 column">
+                                <span style="font-size: medium ;" class="label label-info">发货管理</span>
+                            </div>
+                            <div style="margin-top:10px;margin-left: -10px;" class="col-md-12 column">
+                                {%if messages %}
+                                    <div class="alert alert-success alert-dismissable">
+                                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                        {% for msg in messages %}
+                                            <strong>{{ msg }}&nbsp&nbsp</strong>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %} 
+                            </div>
+                              
+                            <div class="col-md-12 column">
+                                <nav style="margin-left: -10px;" class="navbar navbar-default" role="navigation">
+                                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                                        <form class="navbar-form navbar-left" role="search" action="" method="post">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <input placeholder="输入订单号搜索" type="text" name="order_number" class="form-control" />
+                                            </div> <button type="submit" style="margin-left: 10px;" class="btn btn-primary">查询</button><a role="button" class="btn btn-default" style="margin-left: 10px;" href="/management/logistics/">重置</a>
+                                        </form>
+                                    </div>
+                                </nav>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            ID
+                                        </th>
+                                        <th>
+                                            订单号
+                                        </th>
+                                        <th>
+                                            物流公司
+                                        </th>
+                                        <th>
+                                            物流编号
+                                        </th>
+                                        <th>
+                                            货物状态
+                                        </th>
+                                        <th>
+                                            发货时间
+                                        </th>
+                                        <th>
+                                            <a id="modal-207299" href="#modal-container-207299" role="button" style="font-size: xx-small;" class="btn btn-primary" data-toggle="modal">添加</a><a id="modal-207300" href="#modal-container-207300" role="button" style="font-size: xx-small;margin-left: 5px;" class="btn btn-success" data-toggle="modal">导入</a>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in logistics_data %}
+                                        <tr class="{{ item.style }}" >
+                                            <td>
+                                                {{ item.id }}
+                                            </td>
+                                            <td>
+                                                {{ item.order_number }}
+                                            </td>
+                                            {% if item.logistics_company == 1 %}
+                                                <td>
+                                                    <dd>顺丰快递</dd> 
+                                                </td>
+                                            {% endif %}
+                                            {% if item.logistics_company == 2 %}
+                                                <td>
+                                                    <dd>中通快递</dd> 
+                                                </td>
+                                            {% endif %}
+                                            {% if item.logistics_company == 3 %}
+                                                <td>
+                                                    <dd>韵达快递</dd> 
+                                                </td>
+                                            {% endif %}
+                                            <td>
+                                                {{ item.logistics_number }}
+                                            </td>
+                                            {% if item.commodity_status == 1 %}
+                                                <td>
+                                                    <dd>发货中</dd> 
+                                                </td>
+                                            {% endif %}
+                                            {% if item.commodity_status == 2 %}
+                                                <td>
+                                                    <dd>已收货</dd> 
+                                                </td>
+                                            {% endif %}
+                                            {% if item.commodity_status == 3 %}
+                                                <td>
+                                                    <dd>退货中</dd> 
+                                                </td>
+                                            {% endif %}
+                                            <td>
+                                                {{ item.delivery_time }}
+                                            </td>
+                                            <td>
+                                                <a id="modal-207301" onclick="update_delivery('{{ item.id}}','{{ item.order_number}}','{{ item.logistics_company}}','{{ item.logistics_number}}','{{ item.commodity_status}}')" href="#modal-container-207301" role="button" style="font-size: xx-small;" class="btn btn-success" data-toggle="modal">修改</a>
+                                                <button style="font-size: xx-small;" class="btn btn-danger" onclick="delete_confirm('/management/logistics/delete?id={{ item.id }}')" > 删除</button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="row clearfix">
+                                <div class="col-md-4 column">
+                                </div>
+                                <div class="col-md-4 column">
+                                </div>
+                                <div class="col-md-4 column">
+                                    <ul style="float: right;" class="pagination">
+                                        <li class="">
+                                            {% if dic1.page_number <= 2 %}
+                                                <a href="/management/logistics/page?page_number=1">上一页</a>
+                                            {% else %}
+                                                <a href="/management/logistics/page?page_number={{ dic1.page_number|add:-1 }}">上一页</a>
+                                            {% endif %}
+                                        </li>
+                                        <li >
+                                             <a style="margin-left: 10px;" href="/management/logistics/page?page_number={{ dic1.page_number|add:1 }}">下一页</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 修改物流信息模态框 -->
+                <div class="modal fade" id="modal-container-207301" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    修改物流信息
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <form role="form" action="/management/logistics/update/" method="post" enctype = "multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="update_id">ID</label><input type="text" class="form-control" name="update_id" readonly="readonly" id="update_id" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_order_number">订单号</label><input type="text" class="form-control" name="update_order_number" id="update_order_number" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_logistics_company">物流公司</label>
+                                        <select name="update_logistics_company" id="update_logistics_company" class="form-control">
+                                            <option value="1">顺丰快递</option>
+                                            <option value="2">中通快递</option>
+                                            <option value="3">韵达快递</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_logistics_number">物流编号</label><input type="text" class="form-control" name="update_logistics_number" id="update_logistics_number" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="update_commodity_status">货物状态</label>
+                                        <select name="update_commodity_status" id="update_commodity_status" class="form-control">
+                                            <option value="1">发货中</option>
+                                            <option value="2">已收货</option>
+                                            <option value="3">退货中</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-default btn-primary">提交</button>
+                                </form>
+                            </div>
+                        </div> 
+                    </div>
+                </div> 
+                <!-- 添加物流信息模态框 -->
+                <div class="modal fade" id="modal-container-207299" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    添加物流信息
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <form role="form" action="/management/logistics/add/" method="post" enctype = "multipart/form-data">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="order_number">订单号</label><input type="text" class="form-control" name="order_number" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="logistics_company">物流公司</label>
+                                        <select name="logistics_company" class="form-control">
+                                            <option value="1">顺丰快递</option>
+                                            <option value="2">中通快递</option>
+                                            <option value="3">韵达快递</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="logistics_number">物流编号</label><input type="text" class="form-control" name="logistics_number" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="commodity_status">货物状态</label>
+                                        <select name="commodity_status" class="form-control">
+                                            <option value="1">发货中</option>
+                                            <option value="2">已收货</option>
+                                            <option value="3">退货中</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-default btn-primary">提交</button>
+                                </form>
+                            </div>
+                        </div> 
+                    </div>
+                </div> 
+                <!--批量导入用户的模态框-->
+                <div class="modal fade" id="modal-container-207300" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+                                <h4 class="modal-title" id="myModalLabel">
+                                    导入用户
+                                </h4>
+                            </div>
+                            <div class="modal-body">
+                                <form role="form" action="/managementUser/import/" method="post" enctype = "multipart/form-data">
+                                    {% csrf_token %}
+                                    <div style="margin-top: 15px;" class="form-group">
+                                            <label for="user_file">请上传EXCEL文件</label><input role="button"  type="file" name="user_file" />
+                                        <p style="margin-top: 10px;" class="help-block">
+                                            模板下载链接如下:
+                                            <a href="/managementUser/download/">点击下载</a>
+                                        </p>
+                                    </div>
+                                    <button type="submit" class="btn btn-default btn-primary">导入</button>
+                                </form>
+                            </div>
+                        </div> 
+                    </div>
+                </div> 
+                <nav style="height: 20px;" class="navbar navbar-default navbar-fixed-top" role="navigation">
+                    <div style="margin-left: 185px;margin-top: 15px;" class="navbar-header">
+                        <p> <a style="margin-left: 10px;color: black;" href="/index/">商城首页</a>&nbsp&nbsp&nbsp&nbsp&nbsp欢迎来到水果商店!<a style="margin-left: 15px;color: black;" href="/login/">点击登录!</a> <a style="margin-left: 15px;color: black;" href="/register/">免费注册!</a> <a style="margin-left: 15px;color: black;" href="/management/">管理入口</a> <img src="/static/imgs/index_user.png" width="20px" height="20px" style="margin-left: 540px;" alt=""><a style="margin-left: 10px;color: black;" href="/userInfo/">{{ dic1.current_user }}</a> <a style="margin-left: 40px; color: black;" href="/logout/">退出</a></p>
+                    </div>   
+                </nav>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <dl style="margin-top:20px;" >
+                    <div>
+                        <dt>
+                            项目地址:<a href="https://github.com/xiaowang012/FruitStore.git" >点击进入</a>&nbsp邮箱: 1300202481@qq.com
+                        </dt>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </div>
+   
+</body>
+</html>
+
+
