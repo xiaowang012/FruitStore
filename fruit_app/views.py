@@ -716,6 +716,8 @@ def payment_page(request):
             customer_id = user_info.id
             #根据customer_id ,is_submit查询数据
             fruits_shop_data = models.ShoppingCart.objects.filter(customer_id = customer_id,is_submit = 0).order_by('-add_fruit_time').all()
+            if len(fruits_shop_data) != 0:
+                order_number = 'SGSD' + str(time.time()).replace('.','')
             for data in fruits_shop_data:
                 #查询水果价格
                 fruit_data = models.Fruits.objects.filter(id = data.fruit_id).first()
@@ -743,6 +745,7 @@ def payment_page(request):
 
                 #计算单个条目完成后将is_submit 改为1
                 data.is_submit = 1 
+                data.order_number = order_number
                 data.save()  
 
             #查询收货地址
@@ -758,10 +761,8 @@ def payment_page(request):
             #总金额保留两位小数
             total_amount = float('%.2f'%total_amount)
             #通过金额判断是否有商品数据，若有数据则生成订单
-            # print(total_amount)
-            if total_amount != 0.0:
+            if total_amount != 0.0 and order_number:
                 total_amount_all = total_amount + total_transportation_price
-                order_number = 'SGSD' + str(time.time()).replace('.','')
                 test1 = models.FruitOrder(id = None,order_number = order_number,customer = customer_id,money = total_amount_all,pay_status = 0, order_status= 0,address = address1)
                 test1.save()
             else:
@@ -1504,8 +1505,6 @@ def order_management(request):
                 user_info = User.objects.filter(id = customer_id).first()
                 if user_info:
                     j.customer = user_info.username
-                else:
-                    messages.add_message(request,messages.ERROR,' 用户不存在!')
             #给表格加style
             j.style = random.choice(['error','info','success','warning']) 
         dic1 = {'current_user':current_user,'page_number':1}
@@ -1853,7 +1852,6 @@ def order_management_download_import_order_file(request):
             messages.add_message(request,messages.ERROR,' 模板文件不存在!')
             return redirect('/management/order/')
 
-#未完成
 #订单管理发货操作
 def order_management_send_order_goods(request):
     current_user = request.user
@@ -1868,18 +1866,20 @@ def order_management_send_order_goods(request):
             if order_info:
                 #判断支付状态为1时才可以发货
                 if order_info.pay_status == 1:
-                    messages.add_message(request,messages.SUCCESS,' 发货操作成功! 物流信息可去物流管理中查询!')
-                    #获取收货地址
-
                     #将订单标记为已完成
                     if order_info.order_status == 0:
                         order_info.order_status = 1
                         order_info.save()
-                    #暂时先不写后续操作#####################
-                    #####################
-                    #####################
-                    #####################
-                    #####################
+                    #将数据加入发货信息表
+                    order_number = order_info.order_number
+                    logistics_company = 1
+                    commodity_status = 1
+                    logistics_number = 'SF' + str(time.time()).replace('.','')
+                    test1 = models.Delivery(id = None,order_number = order_number,logistics_company = logistics_company,\
+                                logistics_number = logistics_number,commodity_status = commodity_status)
+                    test1.save()
+                    messages.add_message(request,messages.SUCCESS,' 发货操作成功! 物流信息可去发货管理中查询!')
+
                 else:
                     messages.add_message(request,messages.ERROR,' 当前订单还未支付! 不允许进行发货操作!')
             else:
@@ -2032,17 +2032,6 @@ def goods_management_update_goods(request):
             update_fruit_picture1 = request.FILES.get('update_fruit_picture1')
             update_fruit_picture2 = request.FILES.get('update_fruit_picture2')
             update_fruit_picture3 = request.FILES.get('update_fruit_picture3')
-
-            #打印测试数据
-            # print(update_id)
-            # print(update_fruit_name)
-            # print(update_fruit_type_id)
-            # print(update_fruit_description)
-            # print(update_fruit_price)
-            # print(update_fruit_weight)
-            # print(update_transportation_price)
-            # print(update_Sales)
-            # #print('file1',update_fruit_picture1.name)
             try:
                 update_id = int(update_id)
             except:
@@ -2184,6 +2173,18 @@ def goods_management_delete_goods(request):
             #查询商品
             goods_info = models.Fruits.objects.filter(id = delete_goods_id) .first()
             if goods_info:
+                #删除图片
+                pic_name = goods_info.fruit_pic_file_name
+                if ";" in pic_name:
+                    for path in pic_name.split(';'):
+                        delete_pic_path = os.getcwd() + os.sep + 'static' + os.sep + 'imgs' + os.sep + path
+                        print(delete_pic_path)
+                        if os.path.isfile(delete_pic_path) == True:
+                            os.remove(delete_pic_path)
+                else:
+                    delete_pic_path = os.getcwd() + os.sep + 'static' + os.sep + 'imgs' + os.sep + pic_name
+                    if os.path.isfile(delete_pic_path) == True:
+                        os.remove(delete_pic_path)
                 goods_info.delete()
                 messages.add_message(request,messages.SUCCESS,' 删除成功!')
             else:
@@ -2364,7 +2365,6 @@ def role_management_search_role(request):
             messages.add_message(request, messages.ERROR, errors)
             return redirect('/management/role/')
 
-
 #角色管理查询角色翻页
 def role_management_search_role_page(request):
     current_user = request.user
@@ -2417,7 +2417,6 @@ def role_management_add_role(request):
                 errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
             messages.add_message(request, messages.ERROR, errors)
         return redirect('/management/role/')
-
 
 #角色管理修改角色
 def role_management_update_role(request):
@@ -2552,7 +2551,6 @@ def delivery_management_add_delivery(request):
             messages.add_message(request, messages.ERROR, errors)
         return redirect('/management/logistics/')
 
-
 #发货管理修改货物
 def delivery_management_update_delivery(request):
     if request.method == 'POST':
@@ -2616,7 +2614,6 @@ def delivery_management_update_delivery(request):
             messages.add_message(request, messages.ERROR, errors)
         return redirect('/management/logistics/')
 
-
 #发货管理删除货物
 def delivery_management_delete_delivery(request):
     if request.method == 'GET':
@@ -2634,15 +2631,221 @@ def delivery_management_delete_delivery(request):
                 messages.add_message(request,messages.ERROR,'  删除失败! 货物不存在')
         return redirect('/management/logistics/')
       
-
 #发货管理导入货物
 def delivery_management_import_delivery(request):
-    pass
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementLogisticsInfoImport(request.POST,request.FILES)
+        if form.is_valid():
+            delivery_file = request.FILES.get('delivery_file')
+            if delivery_file:
+                file_extension = os.path.splitext(delivery_file.name)[-1]
+                if '.xlsx' == file_extension or '.xls' == file_extension:
+                    file_name =  str(time.time()) + file_extension
+                    delivery_file_dir = os.getcwd() + os.path.join(os.sep,'temp', file_name)
+                    #保存文件到临时文件目录temp
+                    with open(delivery_file_dir,'wb') as f:
+                        for chunk in delivery_file.chunks():
+                            f.write(chunk)
+                    #读取excel写入数据库
+                    work_book = xlrd.open_workbook (delivery_file_dir)
+                    ws = work_book.sheet_by_name('Sheet1')
+                    #读取第一行数据
+                    if ws.nrows != 0:
+                        line_1_values = ws.row_values(0)
+                        if line_1_values == ['订单号码','物流公司','物流号码','货物状态']:
+                            message_list = []
+                            for i in range(1,ws.nrows):
+                                try:
+                                    values_list = ws.row_values(i)
+                                    order_number = values_list[0]
+                                    logistics_company = values_list[1]
+                                    logistics_number = values_list[2]
+                                    commodity_status = int(values_list[3])
+                                    #查询订单号是否存在
+                                    if models.FruitOrder.objects.filter(order_number = order_number).first():
+                                        #货物表订单号查重
+                                        if not models.Delivery.objects.filter(order_number = order_number).first():
+                                            #加入数据库
+                                            test1 = models.Delivery(id = None,order_number = order_number,logistics_company = int(logistics_company),\
+                                                logistics_number = logistics_number,commodity_status = int(commodity_status))
+                                            test1.save()
+                                            msg = ' 导入货物 ' +str((order_number,logistics_company,logistics_number,commodity_status)) +' 成功!'
+                                            message_list.append(msg)
+                                        else:
+                                            msg = ' 导入货物的订单号:  ' + order_number +' 重复! 无法再次导入!'
+                                            message_list.append(msg)  
+                                    else:
+                                        msg = ' 导入货物的订单号:  ' + order_number +' 不存在!'
+                                        message_list.append(msg)
+                                except:
+                                    #加入消息列表
+                                    msg = ' 导入货物 ' +str((order_number,logistics_company,logistics_number,commodity_status)) +' 失败!'
+                                    message_list.append(msg)
+                            #从message_list 取提示
+                            msgs = ''
+                            for msg in message_list:
+                                msgs += msg
+                            messages.add_message(request,messages.ERROR,msgs)
+                        else:
+                            messages.add_message(request,messages.ERROR,' 数据格式错误!')
+                    else:
+                        messages.add_message(request,messages.ERROR,' 空数据!')
+                else:
+                    messages.add_message(request,messages.ERROR,' 请上传excel文件!')
+            else:
+                messages.add_message(request,messages.ERROR,' 文件不存在!')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+        return redirect('/management/logistics/')
+
+#发货管理下载导入货物模板
+def delivery_management_download_import_delivery_file(request):
+    if request.method == 'GET':
+        permission_template_file = os.getcwd() + os.path.join(os.sep,'media','template_import_logistics.zip')
+        if os.path.isfile(permission_template_file) == True:
+            try:
+                f = open(permission_template_file,'rb')
+                response = FileResponse(f)
+                response['Content-Type'] = 'application/octet-stream'
+                response['Content-Disposition'] = 'attachment;filename=' + 'template_import_logistics.zip'
+                return response
+            except:
+                messages.add_message(request,messages.ERROR,' 下载失败!')
+                return redirect('/management/logistics/')
+        else:
+            messages.add_message(request,messages.ERROR,' 模板文件不存在!')
+            return redirect('/management/logistics/')
 
 #发货管理查询货物
 def delivery_management_search_delivery(request):
-    pass
+    current_user = request.user
+    if request.method == 'POST':
+        form = forms.ManagementLogisticsInfoSearch(request.POST)
+        if form.is_valid():
+            order_number = request.POST.get('order_number')
+            if order_number:
+                #查询物流信息
+                logistics_info = models.Delivery .objects.filter(order_number__contains = order_number)[0:10]
+                for j in logistics_info:
+                    j.style = random.choice(['error','info','success','warning'])
+                    delivery_time = j.delivery_time
+                    j.delivery_time = delivery_time.strftime("%Y-%m-%d %H:%M:%S")
+                if len(logistics_info) == 0:
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的物流信息!')
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':1,'order_number':order_number}
+                return render(request,'management_logistics_search.html',{'dic1':dic1,'logistics_data':logistics_info})
+            else:
+                messages.add_message(request,messages.ERROR,' 订单号不存在!')
+                return redirect('/management/logistics/')
+        else:
+            #未通过表单校验
+            errors = ''
+            for key,value in form.errors.items():
+                errors += str(value).replace('<ul class="errorlist"><li>','').replace('</li></ul>','') + '  '
+            messages.add_message(request, messages.ERROR, errors)
+            return redirect('/management/logistics/')
 
 #发货管理查询货物翻页
 def delivery_management_search_delivery_page(request):
-    pass
+    current_user = request.user
+    if request.method == 'GET':
+        order_number = request.GET.get('code')
+        page_number = request.GET.get('page_number')
+        if order_number:
+            try:
+                page_number = int(page_number)
+            except:
+                messages.add_message(request,messages.ERROR,' 错误! 参数错误!')
+            else:
+                search_start_num = (page_number-1)*10
+                search_end_num = page_number*10
+                logistics_info = models.Delivery .objects.filter(order_number__contains = order_number)[search_start_num:search_end_num]
+                for j in logistics_info:
+                    j.style = random.choice(['error','info','success','warning'])
+                    delivery_time = j.delivery_time
+                    j.delivery_time = delivery_time.strftime("%Y-%m-%d %H:%M:%S")
+                if len(logistics_info) == 0:
+                    messages.add_message(request,messages.ERROR,' 未查询到任何满足条件的物流信息!')
+                #渲染页面
+                dic1 = {'current_user':current_user,'page_number':page_number,'order_number':order_number}
+                return render(request,'management_logistics_search.html',{'dic1':dic1,'logistics_data':logistics_info})
+        else:
+            messages.add_message(request,messages.ERROR,'  订单号不存在!')
+            return redirect('/management/logistics/')
+
+#发货管理生成发货单
+def delivery_management_create_logistics_sheet(request):
+    if request.method == 'GET':
+        id = request.GET.get('id')
+        try:
+            id = int(id)
+        except:
+            messages.add_message(request,messages.ERROR,' id参数错误!')
+        else:
+            #查询发货表中的数据
+            delivery_info = models.Delivery.objects.filter(id = id).first()
+            if delivery_info:
+                #获取订单号码，物流公司，物流编号
+                order_number = delivery_info.order_number
+                delivery_time = delivery_info.delivery_time
+                logistics_company = delivery_info.logistics_company
+                logistics_number = delivery_info.logistics_number
+                
+                #通过订单号码查询地址信息
+                address_info = models.FruitOrder.objects.filter(order_number = order_number).first()
+                if address_info:
+                    address = address_info.address
+                else:
+                    address = None
+                
+                #通过订单号码查询购物明细
+                #定义一个购物明细list
+                shopping_list = []
+                #总运费
+                total_transportation_price = 0.00
+                #水果总价
+                total_fruits_price = 0.00
+                shopping_list_info = models.ShoppingCart.objects.filter(order_number = order_number).all()
+                for fruit in shopping_list_info:
+                    #购买数量
+                    buy_number = fruit.fruit_number
+                    #水果ID
+                    fruit_id = fruit.fruit_id
+                    #根据id查询水果名称，单价，运费，规格
+                    fruits_info = models.Fruits.objects.filter(id = fruit_id).first()
+                    m = 0
+                    if fruits_info:
+                        m += 1
+                        fruit_name = fruits_info.fruit_name
+                        fruit_price = float(fruits_info.fruit_price)
+                        fruit_weight = fruits_info.fruit_weight
+                        transportation_price = float(fruits_info.transportation_price)
+
+                        #计算单个水果金额
+                        fruits_money = fruit_price*buy_number*2
+                        #水果累计
+                        total_fruits_price += fruits_money
+                        #运费累计
+                        total_transportation_price += transportation_price
+                        #添加数据到shopping_list
+                        shopping_list.append({'id':m,'fruit_name':fruit_name,'fruit_price':fruit_price,'number':buy_number,\
+                            'fruit_weight':fruit_weight,'money':fruits_money,'tran_price':transportation_price})
+                #dic1
+                #计算总运费加总价格
+                total_money = total_fruits_price + total_transportation_price
+                total_money = float('%.2f'%total_money)
+                #格式化时间
+                delivery_time = delivery_time.strftime("%Y-%m-%d %H:%M:%S")
+                dic1 = {'delivery_time':delivery_time,'order_number':order_number,'logistics_company':logistics_company,'logistics_number':logistics_number,\
+                    'address':address,'total_money':total_money}
+                #print(shopping_list)
+                return render(request,'delivery_table.html',{'dic1':dic1,'shopping_list_data':shopping_list})
+            else:
+                messages.add_message(request,messages.ERROR,' 货物不存在，无法查看发货单!')
+                return redirect('/management/logistics/')
