@@ -202,3 +202,11 @@ class ManagementLogisticsInfoUpdate(forms.Form):
     update_logistics_company = forms.CharField(min_length=1,max_length=100,error_messages={"required":"物流公司不能为空!","min_length":"物流公司长度不能小于1!","max_length":"物流公司长度不能大于100!"})
     update_logistics_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"物流编号不能为空!","min_length":"物流编号长度不能小于1!","max_length":"物流编号长度不能大于100!"})
     update_commodity_status = forms.CharField(min_length=1,max_length=100,error_messages={"required":"物流状态不能为空!","min_length":"物流状态长度不能小于1!","max_length":"物流状态长度不能大于100!"})
+
+#后台管理发货管理导入货物
+class ManagementLogisticsInfoImport(forms.Form):
+    delivery_file = forms.FileField(required = True,allow_empty_file = False,error_messages={"required":"文件不能为空!","empty":"不允许上传空文件!"})
+   
+#后台管理发货管理根据订单号查询货物单
+class ManagementLogisticsInfoSearch(forms.Form):
+    order_number = forms.CharField(min_length=1,max_length=100,error_messages={"required":"订单号不能为空!","min_length":"订单号长度不能小于1!","max_length":"订单号长度不能大于100!"})
