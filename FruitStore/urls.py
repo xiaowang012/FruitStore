@@ -98,8 +98,9 @@ urlpatterns = [
     path('management/logistics/update/',views.delivery_management_update_delivery),
     path('management/logistics/delete',views.delivery_management_delete_delivery),
     path('management/logistics/import/',views.delivery_management_import_delivery),
+    path('management/logistics/download/',views.delivery_management_download_import_delivery_file),
     path('management/logistics/search/',views.delivery_management_search_delivery),
     path('management/logistics/search/page',views.delivery_management_search_delivery_page),
-
+    path('management/logistics/create/logistics_sheet',views.delivery_management_create_logistics_sheet),
 ]
 
