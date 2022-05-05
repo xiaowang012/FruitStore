@@ -15,10 +15,20 @@
 			<h3 class="text-center">
 				发货清单
 			</h3>
-			<h4 style="margin-top: 20px;" >收货人:小王</h4>
-			<h4>联系人:15623874066</h4>
-			<h4>地址:武汉市洪山区xx路xx号</h4>
-			<h4>订单号:SGSD16509764874371781</h4>
+			<h4 style="margin-top: 30px;" >订单号:{{ dic1.order_number }}</h4>
+			<h4>发货时间:{{ dic1.delivery_time }} </h4>
+			<h4>{{ dic1.address }}</h4>
+			{% if dic1.logistics_company == 1 %}
+				<h4>物流公司:顺丰快递</h4>
+			{% endif %}
+			{% if dic1.logistics_company == 2 %}
+				<h4>物流公司:中通快递</h4>
+			{% endif %}
+			{% if dic1.logistics_company == 3 %}
+				<h4>物流公司:韵达快递</h4>
+			{% endif %}
+			<h4>物流单号:{{ dic1.logistics_number }}</h4>
+
 			<table style="margin-top:20px ;"  class="table table-bordered">
 				<thead  >
 					<tr>
@@ -46,193 +56,34 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr class="">
-						<td>
-							1
-						</td>
-						<td>
-							香蕉
-						</td>
-						<td>
-							15.00元
-						</td>
-						<td>
-							5
-						</td>
-						<td>
-							1kg
-						</td>
-						<td>
-							100.00元
-						</td>
-						<td>
-							10.00元
-						</td>
-					</tr>
-					<tr class="">
-						<td>
-							2
-						</td>
-						<td>
-							香蕉
-						</td>
-						<td>
-							15.00元
-						</td>
-						<td>
-							5
-						</td>
-						<td>
-							1kg
-						</td>
-						<td>
-							100.00元
-						</td>
-						<td>
-							10.00元
-						</td>
-					</tr>
-					<tr class="">
-						<td>
-							3
-						</td>
-						<td>
-							香蕉
-						</td>
-						<td>
-							15.00元
-						</td>
-						<td>
-							5
-						</td>
-						<td>
-							1kg
-						</td>
-						<td>
-							100.00元
-						</td>
-						<td>
-							10.00元
-						</td>
-					</tr>
-					<tr class="">
-						<td>
-							4
-						</td>
-						<td>
-							香蕉
-						</td>
-						<td>
-							15.00元
-						</td>
-						<td>
-							5
-						</td>
-						<td>
-							1kg
-						</td>
-						<td>
-							100.00元
-						</td>
-						<td>
-							10.00元
-						</td>
-					</tr>
-					<tr class="">
-						<td>
-							5
-						</td>
-						<td>
-							香蕉
-						</td>
-						<td>
-							15.00元
-						</td>
-						<td>
-							5
-						</td>
-						<td>
-							1kg
-						</td>
-						<td>
-							100.00元
-						</td>
-						<td>
-							10.00元
-						</td>
-					</tr>
-					<tr class="">
-						<td>
-							6
-						</td>
-						<td>
-							香蕉
-						</td>
-						<td>
-							15.00元
-						</td>
-						<td>
-							5
-						</td>
-						<td>
-							1kg
-						</td>
-						<td>
-							100.00元
-						</td>
-						<td>
-							10.00元
-						</td>
-					</tr>
-					<tr class="">
-						<td>
-							7
-						</td>
-						<td>
-							香蕉
-						</td>
-						<td>
-							15.00元
-						</td>
-						<td>
-							5
-						</td>
-						<td>
-							1kg
-						</td>
-						<td>
-							100.00元
-						</td>
-						<td>
-							10.00元
-						</td>
-					</tr>
-					<tr class="">
-						<td>
-							8
-						</td>
-						<td>
-							香蕉
-						</td>
-						<td>
-							15.00元
-						</td>
-						<td>
-							5
-						</td>
-						<td>
-							1kg
-						</td>
-						<td>
-							100.00元
-						</td>
-						<td>
-							10.00元
-						</td>
-					</tr>
+					{% for item in shopping_list_data %}
+						<tr class="">
+							<td>
+								{{ item.id }}
+							</td>
+							<td>
+								{{ item.fruit_name }}
+							</td>
+							<td>
+								{{ item.fruit_price }}
+							</td>
+							<td>
+								{{ item.number }}
+							</td>
+							<td>
+								{{ item.fruit_weight }}
+							</td>
+							<td>
+								{{ item.money }}
+							</td>
+							<td>
+								{{ item.tran_price }}
+							</td>
+						</tr>
+					{% endfor %}
 				</tbody>
 			</table>
-			<h3 style="float: right;" >总金额:100.00元</h3>
+			<h3 style="float: right;" >总金额:{{ dic1.total_money }}元</h3>
 			
 		</div>
 	</div>
