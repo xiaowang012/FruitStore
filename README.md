@@ -44,15 +44,27 @@
 
 ###  （11）权限管理
 
+![](./img/management_permission.png)
+
 ###  （12）订单管理
+
+![](./img/management_order.png)
 
 ###  （13）商品管理
 
-###  （14）账目管理
+![](./img/management_goods.png)
 
-###  （15）退货管理
+###  （14）角色管理
 
-### （16）访问策略
+![](./img/management_role.png)
+
+###  （15）发货管理
+
+![](./img/management_logistics.png)
+
+### （16）查看发货清单
+
+![](./img/logistics_sheet.png)
 
 
 ## 2.环境配置
