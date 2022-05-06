@@ -65,6 +65,7 @@ urlpatterns = [
     path('management/permission/download/',views.permission_management_download_import_permission_file),
     path('management/permission/update/',views.permission_management_update_permission),
     path('management/permission/delete',views.permission_management_delete_permission),
+    path('management/permission/refresh/',views.permission_refresh),
     path('management/order/',views.order_management),
     path('management/order/page',views.order_management_page),
     path('management/order/search/',views.order_management_search_order),
