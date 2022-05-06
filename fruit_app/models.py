@@ -88,3 +88,9 @@ class Delivery(models.Model):
     logistics_number = CharField(max_length = 100,default = '')
     commodity_status = IntegerField(default = 0)
     delivery_time = DateTimeField(default = timezone.now)
+
+#用户组表
+class UserGroup(models.Model):
+    id = AutoField(primary_key = True)
+    user_id = IntegerField(default = 0)
+    group_id = IntegerField(default = 0)
