@@ -3,7 +3,8 @@ from django.http import HttpResponse,FileResponse
 from django.shortcuts import render,redirect
 from django.contrib import auth
 from django.contrib.auth.models import User,Group
-from django.contrib.auth.decorators import login_required,permission_required
+from fruit_app.models import RoutePermission, UserGroup
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from . import forms
 from . import models
@@ -11,6 +12,7 @@ import random
 import time
 import os
 import xlrd
+from fruit_app.fruit_app_decorator import PERMISSION_DICT, routing_permission_check
 
 # Create your views here.
 # 127.0.0.1:5001
@@ -64,6 +66,11 @@ def register(request):
                     #用户名查重,如果查不到，正常创建用户
                     try:
                         User.objects.create_user(username = username,password = password)
+                        user_info = User.objects.filter(username = username).first()
+                        id = user_info.id
+                        #分配用户组，默认customer
+                        test1 = UserGroup(id = None,user_id = id,group_id = 2)
+                        test1.save()
                     except:
                         #返回对应的错误提示信息到页面
                         message = ' 注册: ' + username +' Failed!'
@@ -94,15 +101,14 @@ def register(request):
             return render(request, "register.html", {"form": form,'dic1':dic1})
             
 #用户登出
-# @login_required
-#@permission_check
+@login_required
 def logout(request):
     auth.logout(request)
     return redirect('/login/')
 
 #商城首页
-# @login_required
-# @permission_check
+@login_required
+@routing_permission_check
 def store_index(request):
     if request.method == 'GET':
         form = forms.SearchFruitsForm()
@@ -137,6 +143,8 @@ def store_index(request):
         return render(request,'index.html',{'form':form,'list1':fruits_data,'list2':comments_data,'dic1':dic1})
 
 #用户信息
+@login_required
+@routing_permission_check
 def user_info(request):
     if request.method == 'GET':
         current_user = request.user
@@ -153,6 +161,8 @@ def user_info(request):
             return render(request,'error_404.html')
 
 #修改密码
+@login_required
+@routing_permission_check
 def update_password(request):
     current_user = request.user
     if request.method == 'GET':
@@ -202,6 +212,8 @@ def update_password(request):
         return render(request,'update_password.html',{'form':form,'dic1':dic1,'dic2':dic2})   
            
 #添加/修改个人信息
+@login_required
+@routing_permission_check
 def update_user_info(request):
     current_user = request.user
     if request.method == 'POST':
@@ -279,6 +291,8 @@ def update_user_info(request):
         return render(request,'user_info.html',{'form':form,'dic1':dic1,'dic2':dic2})
 
 #首页给我留言
+@login_required
+@routing_permission_check
 def user_send_message(request):
     current_user = request.user
     if request.method == 'POST':
@@ -310,6 +324,8 @@ def user_send_message(request):
         return redirect('/index/')
         
 #首页删除留言板留言
+@login_required
+@routing_permission_check
 def user_delete_message(request):
     current_user = request.user
     if request.method == 'GET':
@@ -333,6 +349,8 @@ def user_delete_message(request):
         return redirect('/index/')
 
 #获取水果列表(第一页)
+@login_required
+@routing_permission_check
 def get_fruit_info(request):
     current_user = request.user
     if request.method == 'GET':
@@ -359,6 +377,8 @@ def get_fruit_info(request):
             return render(request,'fruit_list.html',{'dic1':dic1,'fruit_data':fruits_res})
 
 #获取水果列表翻页
+@login_required
+@routing_permission_check
 def get_fruit_info_page(request):
     if request.method == 'GET':
         current_user = request.user
@@ -389,6 +409,8 @@ def get_fruit_info_page(request):
             return render(request,'fruit_list.html',{'dic1':dic1,'fruit_data':fruits_res})
     
 #首页查询水果(模糊查询)
+@login_required
+@routing_permission_check
 def search_fruit_info(request):
     current_user = request.user
     if request.method == 'GET':
@@ -425,6 +447,8 @@ def search_fruit_info(request):
             return redirect('/getfruitList/')
     
 #首页查询水果(模糊查询)翻页
+@login_required
+@routing_permission_check
 def search_fruit_info_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -460,6 +484,8 @@ def search_fruit_info_page(request):
             messages.add_message(request,messages.ERROR,' 参数错误!')
 
 #首页水果翻页(查看更多)
+@login_required
+@routing_permission_check
 def index_fruit_page(request):
     if request.method == 'GET':
         current_user = request.user
@@ -502,6 +528,8 @@ def index_fruit_page(request):
             return render(request,'index.html',{'form':form,'list1':fruits_data,'list2':comments_data,'dic1':dic1})
 
 #水果商品详情页面
+@login_required
+@routing_permission_check
 def fruit_details(request):
     current_user = request.user
     if request.method == 'GET':
@@ -548,6 +576,8 @@ def fruit_details(request):
             return render(request,'fruit_details.html',{'dic1':dic1,'fruit_data':fruit_data,'comments_data':comments_data})
 
 #水果商品详情页面添加水果到购物车
+@login_required
+@routing_permission_check
 def add_to_shopping_cart(request):
     current_user = request.user
     if request.method == 'POST':
@@ -580,6 +610,8 @@ def add_to_shopping_cart(request):
             return render(request,'error_404.html')
 
 #购物车页面
+@login_required
+@routing_permission_check
 def shopping_cart(request):
     current_user = request.user
     if request.method == 'GET':
@@ -611,6 +643,8 @@ def shopping_cart(request):
             return render(request,'error_404.html')
 
 #购物车页面翻页
+@login_required
+@routing_permission_check
 def shopping_cart_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -651,6 +685,8 @@ def shopping_cart_page(request):
                 return render(request,'error_404.html')
 
 #购物车修改商品数量
+@login_required
+@routing_permission_check
 def update_shopping_cart_fruit_number(request):
     current_user = request.user
     if request.method == 'POST':
@@ -682,6 +718,8 @@ def update_shopping_cart_fruit_number(request):
         return redirect('/my_shopping_cart/')
     
 #购物车删除条目
+@login_required
+@routing_permission_check
 def delete_shopping_cart__fruit(request):
     current_user = request.user
     if request.method == 'GET':
@@ -700,6 +738,8 @@ def delete_shopping_cart__fruit(request):
         return redirect('/my_shopping_cart/')
 
 #订单付款确认页面
+@login_required
+@routing_permission_check
 def payment_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -776,6 +816,8 @@ def payment_page(request):
             return redirect('/my_shopping_cart/')
 
 #确认订单
+@login_required
+@routing_permission_check
 def confirm_order(request):
     current_user = request.user
     if request.method == 'POST':
@@ -828,6 +870,8 @@ def confirm_order(request):
             return redirect('/my_shopping_cart/')
 
 #支付宝支付页面
+@login_required
+@routing_permission_check
 def ali_pay(request):
     current_user = request.user
     if request.method == 'GET':
@@ -836,6 +880,8 @@ def ali_pay(request):
 
 
 #用户管理
+@login_required
+@routing_permission_check
 def user_management(request):
     current_user = request.user
     if request.method == 'GET':
@@ -852,6 +898,8 @@ def user_management(request):
         return render(request,'management.html',{'dic1':dic1,'user_data':user_info})
 
 #用户管理翻页
+@login_required
+@routing_permission_check
 def user_management_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -877,6 +925,8 @@ def user_management_page(request):
             return render(request,'management.html',{'dic1':dic1,'user_data':user_info})
 
 #用户管理查询用户
+@login_required
+@routing_permission_check
 def user_management_search_user(request):
     current_user = request.user
     if request.method == 'POST':
@@ -907,6 +957,8 @@ def user_management_search_user(request):
             return redirect('/management/')
 
 #用户管理查询用户翻页
+@login_required
+@routing_permission_check
 def user_management_search_user_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -936,6 +988,8 @@ def user_management_search_user_page(request):
             messages.add_message(request,messages.ERROR,' 参数错误!')
 
 #用户管理停用账号
+@login_required
+@routing_permission_check
 def user_management_disable_user(request):
     current_user = request.user
     if request.method == 'GET':
@@ -958,6 +1012,8 @@ def user_management_disable_user(request):
         return redirect('/management/')
 
 #用户管理启用账号
+@login_required
+@routing_permission_check
 def user_management_enable_user(request):
     current_user = request.user
     if request.method == 'GET':
@@ -980,6 +1036,8 @@ def user_management_enable_user(request):
         return redirect('/management/')
 
 #用户管理删除账号
+@login_required
+@routing_permission_check
 def user_management_delete_user(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1000,6 +1058,8 @@ def user_management_delete_user(request):
 
 
 #用户管理修改账号
+@login_required
+@routing_permission_check
 def user_management_update_user(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1027,6 +1087,8 @@ def user_management_update_user(request):
         return redirect('/management/')
 
 #用户管理添加账号
+@login_required
+@routing_permission_check
 def user_management_add_user(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1044,13 +1106,13 @@ def user_management_add_user(request):
                         user_info.email = email
                         user_info.save()
                         #根据不同的group_id 分配不同的用户组
-                        if group_id == '1':
-                            group1 = Group.objects.get(name = 'admin')
-                            group1.user_set.add(user_info)
-                        elif group_id == '2': 
-                            group1 = Group.objects.get(name = 'customer')
-                            group1.user_set.add(user_info)
-                         
+                        try:
+                            group_id = int(group_id)
+                        except:
+                            messages.add_message(request,messages.ERROR,' group_id参数错误!')
+                        else:
+                            test1 = UserGroup(id = None,user_id = user_info.id,group_id = group_id)
+                            test1.save()
                         messages.add_message(request,messages.SUCCESS,'添加用户 ' + username + ' 成功!')
                     else:
                         messages.add_message(request,messages.ERROR,'添加用户 ' + username + ' 失败!')
@@ -1067,6 +1129,8 @@ def user_management_add_user(request):
     return redirect('/management/')
 
 #用户管理导入账号
+@login_required
+@routing_permission_check
 def user_management_import_user(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1105,12 +1169,13 @@ def user_management_import_user(request):
                                             user_info.email = email 
                                             user_info.save()
                                             #根据不同的group_id 分配不同的用户组
-                                            if int(group_id) == 1:
-                                                group1 = Group.objects.get(name = 'admin')
-                                                group1.user_set.add(user_info)
-                                            elif int(group_id) == 2: 
-                                                group1 = Group.objects.get(name = 'customer')
-                                                group1.user_set.add(user_info)
+                                            try:
+                                                group_id = int(group_id)
+                                            except:
+                                                messages.add_message(request,messages.ERROR,' group_id参数错误!')
+                                            else:
+                                                test1 = UserGroup(id = None,user_id = user_info.id,group_id = group_id)
+                                                test1.save()
                                             message = '导入用户: ' + username + ' 成功!'
                                             message_list.append(message)
                                         else:
@@ -1142,6 +1207,8 @@ def user_management_import_user(request):
         return redirect('/management/')
 
 #用户管理导入账号模板下载
+@login_required
+@routing_permission_check
 def user_management_download_import_user_file(request):
     if request.method == 'GET':
         user_template_file = os.getcwd() + os.path.join(os.sep,'media','template_import_user.zip')
@@ -1160,6 +1227,8 @@ def user_management_download_import_user_file(request):
             return redirect('/management/')
 
 #权限管理
+@login_required
+@routing_permission_check
 def permission_management(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1171,6 +1240,8 @@ def permission_management(request):
         return render(request,'management_permission.html',{'dic1':dic1,'permission_data':permission_info})
 
 #权限管理翻页
+@login_required
+@routing_permission_check
 def permission_management_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1191,6 +1262,8 @@ def permission_management_page(request):
             return render(request,'management_permission.html',{'dic1':dic1,'permission_data':permission_info})
 
 #权限管理按url模糊查询
+@login_required
+@routing_permission_check
 def permission_management_search_by_url(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1220,6 +1293,8 @@ def permission_management_search_by_url(request):
         return redirect('/management/permission/')
 
 #权限管理按url模糊查询翻页
+@login_required
+@routing_permission_check
 def permission_management_search_by_url_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1246,6 +1321,8 @@ def permission_management_search_by_url_page(request):
             return redirect('/management/permission/')
 
 #权限管理按用户组查询
+@login_required
+@routing_permission_check
 def permission_management_search_by_user_group(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1274,6 +1351,8 @@ def permission_management_search_by_user_group(request):
                 return redirect('/management/permission/')
 
 #权限管理按用户组查询翻页
+@login_required
+@routing_permission_check
 def permission_management_search_by_user_group_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1306,6 +1385,8 @@ def permission_management_search_by_user_group_page(request):
                 return redirect('/management/permission/')
     
 #权限管理添加权限数据
+@login_required
+@routing_permission_check
 def permission_management_add_permission(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1341,6 +1422,8 @@ def permission_management_add_permission(request):
     return redirect('/management/permission/')
 
 #权限管理导入权限数据
+@login_required
+@routing_permission_check
 def permission_management_import_permission(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1410,6 +1493,8 @@ def permission_management_import_permission(request):
         return redirect('/management/permission/')
 
 #权限管理导入权限数据下载模板
+@login_required
+@routing_permission_check
 def permission_management_download_import_permission_file(request):
     if request.method == 'GET':
         permission_template_file = os.getcwd() + os.path.join(os.sep,'media','template_import_permission.zip')
@@ -1428,6 +1513,8 @@ def permission_management_download_import_permission_file(request):
             return redirect('/management/permission/')
 
 #权限管理修改权限数据
+@login_required
+@routing_permission_check
 def permission_management_update_permission(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1472,6 +1559,8 @@ def permission_management_update_permission(request):
         return redirect('/management/permission/')
 
 #权限管理删除权限数据
+@login_required
+@routing_permission_check
 def permission_management_delete_permission(request):
     if request.method == 'GET':
         delete_permission_id = request.GET.get('id')
@@ -1490,6 +1579,8 @@ def permission_management_delete_permission(request):
         return redirect('/management/permission/')
 
 #订单管理
+@login_required
+@routing_permission_check
 def order_management(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1511,6 +1602,8 @@ def order_management(request):
         return render(request,'management_order.html',{'dic1':dic1,'order_data':order_info})
 
 #订单管理翻页
+@login_required
+@routing_permission_check
 def order_management_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1542,6 +1635,8 @@ def order_management_page(request):
             return render(request,'management_order.html',{'dic1':dic1,'order_data':order_info})
 
 #订单管理按订单号模糊查询
+@login_required
+@routing_permission_check
 def order_management_search_order(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1584,6 +1679,8 @@ def order_management_search_order(request):
             return redirect('/management/order/')
     
 #订单管理按订单号模糊查询翻页
+@login_required
+@routing_permission_check
 def order_management_search_order_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1622,6 +1719,8 @@ def order_management_search_order_page(request):
             return redirect('/management/order/')
 
 #订单管理新增订单
+@login_required
+@routing_permission_check
 def order_management_add_order(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1656,6 +1755,8 @@ def order_management_add_order(request):
         return redirect('/management/order/')
 
 #订单管理修改订单
+@login_required
+@routing_permission_check
 def order_management_update_order(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1718,6 +1819,8 @@ def order_management_update_order(request):
         return redirect('/management/order/')
 
 #订单管理导入订单
+@login_required
+@routing_permission_check
 def order_management_import_order(request):
     current_user = request.user
     if request.method == 'POST':
@@ -1799,6 +1902,8 @@ def order_management_import_order(request):
 
 
 #订单管理删除订单
+@login_required
+@routing_permission_check
 def order_management_delete_order(request):
     if request.method == 'GET':
         delete_order_id = request.GET.get('id')
@@ -1816,6 +1921,8 @@ def order_management_delete_order(request):
         return redirect('/management/order/')
 
 #订单管理删除订单(逻辑删除)
+@login_required
+@routing_permission_check
 def order_management_logical_deletion_order(request):
     if request.method == 'GET':
         delete_order_id = request.GET.get('id')
@@ -1835,6 +1942,8 @@ def order_management_logical_deletion_order(request):
         return redirect('/management/order/')
 
 #订单管理导入订单数据下载模板
+@login_required
+@routing_permission_check
 def order_management_download_import_order_file(request):
     if request.method == 'GET':
         permission_template_file = os.getcwd() + os.path.join(os.sep,'media','template_import_order.zip')
@@ -1853,6 +1962,8 @@ def order_management_download_import_order_file(request):
             return redirect('/management/order/')
 
 #订单管理发货操作
+@login_required
+@routing_permission_check
 def order_management_send_order_goods(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1887,6 +1998,8 @@ def order_management_send_order_goods(request):
         return redirect('/management/order/')
                 
 #商品管理
+@login_required
+@routing_permission_check
 def goods_management(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1899,6 +2012,8 @@ def goods_management(request):
     return render(request,'management_goods.html',{'dic1':dic1,'goods_data':goods_info})
 
 #商品管理翻页
+@login_required
+@routing_permission_check
 def goods_management_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -1920,6 +2035,8 @@ def goods_management_page(request):
     return render(request,'management_goods.html',{'dic1':dic1,'goods_data':goods_info})
 
 #商品管理添加商品
+@login_required
+@routing_permission_check
 def goods_management_add_goods(request):
     current_user = request.user
     if request.method == 'POST':
@@ -2016,6 +2133,8 @@ def goods_management_add_goods(request):
         return redirect('/management/goods/')
 
 #商品管理修改商品
+@login_required
+@routing_permission_check
 def goods_management_update_goods(request):
     current_user = request.user
     if request.method == 'POST':
@@ -2162,6 +2281,8 @@ def goods_management_update_goods(request):
             return redirect('/management/goods/')
 
 #商品管理删除商品
+@login_required
+@routing_permission_check
 def goods_management_delete_goods(request):
     if request.method == 'GET':
         delete_goods_id = request.GET.get('id')
@@ -2192,6 +2313,8 @@ def goods_management_delete_goods(request):
         return redirect('/management/goods/')
 
 #商品管理查询商品
+@login_required
+@routing_permission_check
 def goods_management_search_goods(request):
     current_user = request.user
     if request.method == 'POST':
@@ -2223,6 +2346,8 @@ def goods_management_search_goods(request):
             return redirect('/management/goods/')
 
 #商品管理查询商品翻页
+@login_required
+@routing_permission_check
 def goods_management_search_goods_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -2253,6 +2378,8 @@ def goods_management_search_goods_page(request):
             return redirect('/management/goods/')
 
 #商品管理分类查询商品
+@login_required
+@routing_permission_check
 def goods_management_search_goods_by_fruit_type(request):
     current_user = request.user
     if request.method == 'GET':
@@ -2276,6 +2403,8 @@ def goods_management_search_goods_by_fruit_type(request):
             return render(request,'management_goods_type.html',{'dic1':dic1,'goods_data':fruits_res})
 
 #商品管理分类查询商品翻页
+@login_required
+@routing_permission_check
 def goods_management_search_goods_by_fruit_type_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -2301,6 +2430,8 @@ def goods_management_search_goods_by_fruit_type_page(request):
             return render(request,'management_goods_type.html',{'dic1':dic1,'goods_data':fruits_res})
 
 #角色管理
+@login_required
+@routing_permission_check
 def role_management(request):
     current_user = request.user
     if request.method == 'GET':
@@ -2313,6 +2444,8 @@ def role_management(request):
     return render(request,'management_group.html',{'dic1':dic1,'group_data':group_info})
 
 #角色管理翻页
+@login_required
+@routing_permission_check
 def role_management_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -2337,6 +2470,8 @@ def role_management_page(request):
             return render(request,'management_group.html',{'dic1':dic1,'group_data':group_info})
 
 #角色管理查询角色
+@login_required
+@routing_permission_check
 def role_management_search_role(request):
     current_user = request.user
     if request.method == 'POST':
@@ -2366,6 +2501,8 @@ def role_management_search_role(request):
             return redirect('/management/role/')
 
 #角色管理查询角色翻页
+@login_required
+@routing_permission_check
 def role_management_search_role_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -2394,6 +2531,8 @@ def role_management_search_role_page(request):
             return redirect('/management/role/')
 
 #角色管理添加角色
+@login_required
+@routing_permission_check
 def role_management_add_role(request):
     if request.method == 'POST':
         form = forms.ManagementRoleAdd(request.POST)
@@ -2419,6 +2558,8 @@ def role_management_add_role(request):
         return redirect('/management/role/')
 
 #角色管理修改角色
+@login_required
+@routing_permission_check
 def role_management_update_role(request):
     if request.method == 'POST':
         form = forms.ManagementRoleUpdate(request.POST)
@@ -2455,6 +2596,8 @@ def role_management_update_role(request):
         return redirect('/management/role/')
 
 #角色管理删除角色
+@login_required
+@routing_permission_check
 def role_management_delete_role(request):
     if request.method == 'GET':
         delete_role_id = request.GET.get('id')
@@ -2474,6 +2617,8 @@ def role_management_delete_role(request):
         return redirect('/management/role/')
 
 #发货管理
+@login_required
+@routing_permission_check
 def delivery_management(request):
     current_user = request.user
     if request.method == 'GET':
@@ -2489,6 +2634,8 @@ def delivery_management(request):
         return render(request,'management_logistics.html',{'dic1':dic1,'logistics_data':logistics_info})
 
 #发货管理翻页
+@login_required
+@routing_permission_check
 def delivery_management_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -2513,6 +2660,8 @@ def delivery_management_page(request):
             return render(request,'management_logistics.html',{'dic1':dic1,'logistics_data':logistics_info})
 
 #发货管理添加货物
+@login_required
+@routing_permission_check
 def delivery_management_add_delivery(request):
     if request.method == 'POST':
         form = forms.ManagementLogisticsInfoAdd(request.POST)
@@ -2552,6 +2701,8 @@ def delivery_management_add_delivery(request):
         return redirect('/management/logistics/')
 
 #发货管理修改货物
+@login_required
+@routing_permission_check
 def delivery_management_update_delivery(request):
     if request.method == 'POST':
         form = forms.ManagementLogisticsInfoUpdate(request.POST)
@@ -2615,6 +2766,8 @@ def delivery_management_update_delivery(request):
         return redirect('/management/logistics/')
 
 #发货管理删除货物
+@login_required
+@routing_permission_check
 def delivery_management_delete_delivery(request):
     if request.method == 'GET':
         delete_delivery_id = request.GET.get('id')
@@ -2632,6 +2785,8 @@ def delivery_management_delete_delivery(request):
         return redirect('/management/logistics/')
       
 #发货管理导入货物
+@login_required
+@routing_permission_check
 def delivery_management_import_delivery(request):
     current_user = request.user
     if request.method == 'POST':
@@ -2704,6 +2859,8 @@ def delivery_management_import_delivery(request):
         return redirect('/management/logistics/')
 
 #发货管理下载导入货物模板
+@login_required
+@routing_permission_check
 def delivery_management_download_import_delivery_file(request):
     if request.method == 'GET':
         permission_template_file = os.getcwd() + os.path.join(os.sep,'media','template_import_logistics.zip')
@@ -2722,6 +2879,8 @@ def delivery_management_download_import_delivery_file(request):
             return redirect('/management/logistics/')
 
 #发货管理查询货物
+@login_required
+@routing_permission_check
 def delivery_management_search_delivery(request):
     current_user = request.user
     if request.method == 'POST':
@@ -2752,6 +2911,8 @@ def delivery_management_search_delivery(request):
             return redirect('/management/logistics/')
 
 #发货管理查询货物翻页
+@login_required
+@routing_permission_check
 def delivery_management_search_delivery_page(request):
     current_user = request.user
     if request.method == 'GET':
@@ -2780,6 +2941,8 @@ def delivery_management_search_delivery_page(request):
             return redirect('/management/logistics/')
 
 #发货管理生成发货单
+@login_required
+@routing_permission_check
 def delivery_management_create_logistics_sheet(request):
     if request.method == 'GET':
         id = request.GET.get('id')
@@ -2849,3 +3012,18 @@ def delivery_management_create_logistics_sheet(request):
             else:
                 messages.add_message(request,messages.ERROR,' 货物不存在，无法查看发货单!')
                 return redirect('/management/logistics/')
+
+#刷新权限缓存
+@login_required
+# @routing_permission_check
+def permission_refresh(request):
+    if request.method == 'GET':
+        user_group_data = Group.objects.all()
+        for group in user_group_data:
+            group_name = group.name
+            permission_info = RoutePermission.objects.filter(group_name = group_name).all()
+            url_list = []
+            for per in permission_info:
+                url_list.append(per.url)
+            PERMISSION_DICT[group_name] = url_list
+    return redirect('/management/permission/')
