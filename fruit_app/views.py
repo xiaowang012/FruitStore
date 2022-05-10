@@ -3,7 +3,7 @@ from django.http import HttpResponse,FileResponse
 from django.shortcuts import render,redirect
 from django.contrib import auth
 from django.contrib.auth.models import User,Group
-from fruit_app.models import RoutePermission, UserGroup
+from fruit_app.models import RoutePermission, AppUserGroup
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from . import forms
@@ -24,8 +24,8 @@ def host(request):
     
 #用户登录
 def login(request):
-    if request.session.get('is_login',None) == True:
-        return redirect('/index/')
+    # if request.session.get('is_login',None) == True:
+    #     return redirect('/index/')
     if request.method == "GET":
         form = forms.UserForm
         return render(request, "login.html",{"form":form})
@@ -69,7 +69,7 @@ def register(request):
                         user_info = User.objects.filter(username = username).first()
                         id = user_info.id
                         #分配用户组，默认customer
-                        test1 = UserGroup(id = None,user_id = id,group_id = 2)
+                        test1 = AppUserGroup(id = None,user_id = id,group_id = 2)
                         test1.save()
                     except:
                         #返回对应的错误提示信息到页面
@@ -1111,7 +1111,7 @@ def user_management_add_user(request):
                         except:
                             messages.add_message(request,messages.ERROR,' group_id参数错误!')
                         else:
-                            test1 = UserGroup(id = None,user_id = user_info.id,group_id = group_id)
+                            test1 = AppUserGroup(id = None,user_id = user_info.id,group_id = group_id)
                             test1.save()
                         messages.add_message(request,messages.SUCCESS,'添加用户 ' + username + ' 成功!')
                     else:
@@ -1174,7 +1174,7 @@ def user_management_import_user(request):
                                             except:
                                                 messages.add_message(request,messages.ERROR,' group_id参数错误!')
                                             else:
-                                                test1 = UserGroup(id = None,user_id = user_info.id,group_id = group_id)
+                                                test1 = AppUserGroup(id = None,user_id = user_info.id,group_id = group_id)
                                                 test1.save()
                                             message = '导入用户: ' + username + ' 成功!'
                                             message_list.append(message)

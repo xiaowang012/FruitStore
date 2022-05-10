@@ -90,7 +90,7 @@ class Delivery(models.Model):
     delivery_time = DateTimeField(default = timezone.now)
 
 #用户组表
-class UserGroup(models.Model):
+class AppUserGroup(models.Model):
     id = AutoField(primary_key = True)
     user_id = IntegerField(default = 0)
     group_id = IntegerField(default = 0)

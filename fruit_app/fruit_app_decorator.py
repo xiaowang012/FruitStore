@@ -1,14 +1,14 @@
 #coding=utf-8
 from functools import wraps
 from django.http import HttpResponse
-from fruit_app.models import RoutePermission,UserGroup
+from fruit_app.models import RoutePermission,AppUserGroup
 from django.contrib.auth.models import User,Group
 from django.shortcuts import render
 
-# # # 权限缓存
+# 权限缓存
 PERMISSION_DICT = {}
 
-# #检查路由权限
+#检查路由权限
 def routing_permission_check(func):
     @wraps(func)
     def wrapper(request,*args,**kwargs):
@@ -20,7 +20,7 @@ def routing_permission_check(func):
             userinfo = User.objects.filter(username = user).first()
             if userinfo:
                 user_id = userinfo.id
-                groupinfo = UserGroup.objects.filter(user_id = user_id).first()
+                groupinfo = AppUserGroup.objects.filter(user_id = user_id).first()
                 if groupinfo:
                     group_id = groupinfo.group_id
                     group_name_info = Group.objects.filter(id = group_id ).first()
@@ -51,7 +51,7 @@ def routing_permission_check(func):
             userinfo = User.objects.filter(username = user).first()
             if userinfo:
                 user_id = userinfo.id
-                groupinfo = UserGroup.objects.filter(user_id = user_id).first()
+                groupinfo = AppUserGroup.objects.filter(user_id = user_id).first()
                 if groupinfo:
                     group_id = groupinfo.group_id
                     group_name_info = Group.objects.filter(id = group_id ).first()
